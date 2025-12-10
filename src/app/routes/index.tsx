@@ -3,6 +3,7 @@ import { ProtectedRoute } from './ProtectedRoute';
 import { PublicRoute } from './PublicRoute';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { LoginPage } from './LoginPage';
+import AdminPage from './AdminPage';
 
 const router = createBrowserRouter([
     {
@@ -19,6 +20,7 @@ const router = createBrowserRouter([
                     { path: 'services', element: <div className="p-4">Services Module Placeholder</div> },
                     { path: 'finances', element: <div className="p-4">Finances Module Placeholder</div> },
                     { path: 'settings', element: <div className="p-4">Settings Module Placeholder</div> },
+                    { path: 'admin', element: <AdminPage /> },
                 ],
             },
         ],

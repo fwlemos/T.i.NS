@@ -5,12 +5,20 @@ export const authService = {
         return supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
+                redirectTo: `${window.location.origin}/`,
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'consent',
+                    hd: 'tennessine.com.br', // Restricts to this Google Workspace domain
                 },
-                redirectTo: `${window.location.origin}/`,
             },
+        });
+    },
+
+    async signInWithPassword(email: string, password: string) {
+        return supabase.auth.signInWithPassword({
+            email,
+            password,
         });
     },
 

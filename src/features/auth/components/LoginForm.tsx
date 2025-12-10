@@ -4,13 +4,16 @@ import { authService } from '../services/authService';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/Card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { useToast } from '@/app/providers/ToastProvider';
 
 export function LoginForm() {
     const { t } = useTranslation('auth');
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
+
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
 
     const handleGoogleLogin = async () => {
         try {
@@ -21,6 +24,24 @@ export function LoginForm() {
             toast({
                 type: 'error',
                 message: t('errors.generic', { ns: 'common' }),
+            });
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleEmailLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            setLoading(true);
+            const { error } = await authService.signInWithPassword(email, password);
+            if (error) throw error;
+            // Successful login is handled by AuthProvider/redirect logic usually
+        } catch (error: any) {
+            toast({
+                type: 'error',
+                message: error.message || t('errors.generic', { ns: 'common' }),
             });
             console.error(error);
         } finally {
@@ -54,20 +75,37 @@ export function LoginForm() {
                     </div>
                 </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="email">{t('login.emailLabel')}</Label>
-                    <Input id="email" type="email" placeholder="m@example.com" disabled />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="password">{t('login.passwordLabel')}</Label>
-                    <Input id="password" type="password" disabled />
-                </div>
+                <form onSubmit={handleEmailLogin} className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="email">{t('login.emailLabel')}</Label>
+                        <Input
+                            id="email"
+                            type="email"
+                            placeholder="m@example.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            disabled={loading}
+                            required
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="password">{t('login.passwordLabel')}</Label>
+                        <Input
+                            id="password"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            disabled={loading}
+                            required
+                        />
+                    </div>
+                    <Button className="w-full" type="submit" disabled={loading}>
+                        {t('login.submit')}
+                    </Button>
+                </form>
             </CardContent>
-            <CardFooter>
-                <Button className="w-full" disabled>
-                    {t('login.submit')}
-                </Button>
-            </CardFooter>
+            {/* CardFooter removed as Button is now inside form */}
         </Card>
     );
 }
+

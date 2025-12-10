@@ -4,3 +4,6 @@ export * from './Label';
 export * from './Card';
 export * from './Avatar';
 export * from './Skeleton';
+export * from './Table';
+export * from './Dialog';
+export * from './DropdownMenu';
