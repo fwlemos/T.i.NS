@@ -8,11 +8,9 @@ import {
     Wrench,
     DollarSign,
     Settings,
-    ChevronLeft,
-    ChevronRight
+    ChevronLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
-import { Button } from '@/components/ui/Button';
 
 const NAV_ITEMS = [
     { label: 'Dashboard', icon: LayoutDashboard, href: '/' },
@@ -37,37 +35,40 @@ export function Sidebar() {
     return (
         <aside
             className={cn(
-                "relative flex flex-col border-r bg-card transition-all duration-300 ease-in-out",
-                isCollapsed ? "w-16" : "w-60"
+                "relative flex flex-col py-2 transition-all duration-300 ease-in-out bg-[#1B1B1B] text-white",
+                isCollapsed ? "w-14 items-center px-2" : "w-48 px-3"
             )}
         >
-            <div className="flex h-16 items-center justify-between px-4">
-                {!isCollapsed && <span className="text-xl font-bold">TIMS</span>}
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className={cn("ml-auto", isCollapsed && "mx-auto")}
+            {/* Toggle button at top */}
+            <div className="flex h-8 items-center justify-end mb-2">
+                <button
+                    className={cn(
+                        "p-1.5 rounded-md text-gray-400 hover:text-white hover:bg-white/10 transition-colors",
+                        isCollapsed && "mx-auto"
+                    )}
                     onClick={() => setIsCollapsed(!isCollapsed)}
                 >
-                    {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-                </Button>
+                    <ChevronLeft size={16} className={cn("transition-transform duration-300", isCollapsed && "rotate-180")} />
+                </button>
             </div>
 
-            <nav className="flex-1 space-y-1 p-2">
+            <nav className="flex-1 space-y-0.5">
                 {NAV_ITEMS.map((item) => (
                     <NavLink
                         key={item.href}
                         to={item.href}
                         className={({ isActive }) =>
                             cn(
-                                "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
-                                isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground",
-                                isCollapsed && "justify-center px-2"
+                                "flex items-center rounded-lg px-2.5 py-2 text-sm font-medium transition-all duration-200",
+                                isActive
+                                    ? "bg-white/10 text-white"
+                                    : "text-gray-400 hover:bg-white/5 hover:text-white",
+                                isCollapsed ? "justify-center px-0 w-10 h-10 mx-auto" : ""
                             )
                         }
                     >
-                        <item.icon size={20} />
-                        {!isCollapsed && <span className="ml-3">{item.label}</span>}
+                        <item.icon size={18} strokeWidth={1.5} />
+                        {!isCollapsed && <span className="ml-2.5">{item.label}</span>}
                     </NavLink>
                 ))}
             </nav>
