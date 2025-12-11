@@ -98,7 +98,7 @@ export function DataTable<TData, TValue>({
         state: {
             pagination,
             sorting,
-            rowSelection,
+            ...(rowSelection !== undefined ? { rowSelection } : {}),
         },
         onPaginationChange,
         onSortingChange,

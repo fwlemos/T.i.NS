@@ -57,18 +57,37 @@ export const AuditService = {
         const diff: Record<string, { old: any, new: any }> = {};
 
         const allKeys = new Set([...Object.keys(original), ...Object.keys(updated)]);
+        const ignoredKeys = ['updated_at', 'created_at', 'profiles', 'companies', 'products', 'type', 'id'];
 
         allKeys.forEach(key => {
+            if (ignoredKeys.includes(key)) return;
+
             const oldVal = original[key];
             const newVal = updated[key];
 
-            // Skip if both are undefined/null or equal
-            // Simple strict equality for primitives. 
-            // For objects/arrays, we might need deep comparison, but for this level let's stick to shallow or specific fields.
-            // We ignore 'updated_at' usually.
-            if (key === 'updated_at' || key === 'created_at') return;
+            // Handle undefined/null as equal
+            if ((oldVal === null || oldVal === undefined) && (newVal === null || newVal === undefined)) return;
+
+            // Handle empty strings and nulls interchangeably for simple fields (optional, depending on strictness)
+            // if ((oldVal === '' || oldVal === null) && (newVal === '' || newVal === null)) return;
+
+            // Deep comparison for objects
+            if (typeof oldVal === 'object' && oldVal !== null && typeof newVal === 'object' && newVal !== null) {
+                // Remove empty keys from objects for comparison to avoid {a: ''} vs {} issues
+                const cleanOld = JSON.parse(JSON.stringify(oldVal));
+                const cleanNew = JSON.parse(JSON.stringify(newVal));
+
+                if (JSON.stringify(cleanOld) === JSON.stringify(cleanNew)) return;
+
+                // Special handling for Address objects where empty strings might be considered "empty"
+                const isEmpty = (obj: any) => Object.values(obj).every(x => x === '' || x === null || x === undefined);
+                if (isEmpty(cleanOld) && isEmpty(cleanNew)) return;
+            }
 
             if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+                // One last check: if both are falsy (e.g. mismatching null vs undefined vs empty string), 
+                // we might want to skip if we want "loose" diffs. 
+                // But for now, strict diff except for objects.
                 diff[key] = { old: oldVal, new: newVal };
             }
         });

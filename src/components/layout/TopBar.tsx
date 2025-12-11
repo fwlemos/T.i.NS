@@ -16,23 +16,23 @@ export function TopBar() {
     const { user, signOut } = useAuth();
 
     return (
-        <div className="flex h-14 items-center justify-between px-4 bg-[#1B1B1B]">
-            {/* Logo - Left Section */}
-            <div className="flex items-center gap-3">
+        <div className="flex h-16 items-center px-0 bg-[#1B1B1B]">
+            {/* Logo - Left Section - Centered over Sidebar width */}
+            <div className="w-48 flex-none flex items-center justify-center gap-3 pt-4">
                 <div className="h-8 w-8 rounded-lg bg-white text-[#1B1B1B] flex items-center justify-center font-bold text-sm">T</div>
                 <span className="text-lg font-bold tracking-tight text-white">T(i)NS</span>
             </div>
 
-            {/* Search Bar Placeholder - Center Section */}
-            <div className="flex-1 max-w-xl mx-8">
-                <div className="flex items-center h-9 px-3 rounded-lg bg-white/5 border border-white/10 text-gray-400 cursor-not-allowed">
+            {/* Search Bar - Aligned Left next to Sidebar */}
+            <div className="flex-1 max-w-xl pl-4">
+                <div className="flex items-center h-9 px-3 rounded-lg bg-white/5 border border-white/10 text-gray-400 cursor-not-allowed w-full">
                     <Search size={16} className="mr-2" />
                     <span className="text-sm">Search... (coming soon)</span>
                 </div>
             </div>
 
-            {/* Right Section - Theme Toggle & User */}
-            <div className="flex items-center gap-2">
+            {/* Right Section - Theme Toggle & User - Pushed to right */}
+            <div className="flex items-center gap-2 ml-auto pr-4">
                 {/* Theme Toggle */}
                 <button
                     className="p-2 rounded-md text-gray-400 hover:text-white hover:bg-white/10 transition-colors"

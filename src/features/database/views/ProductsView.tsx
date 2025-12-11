@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, RowSelectionState } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/DataTable';
 import { ViewContainer } from '../components/ViewContainer';
 import { useTableData } from '../hooks/useTableData';
@@ -25,6 +25,7 @@ type Product = Database['public']['Tables']['products']['Row'] & {
 export function ProductsView() {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
+    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
     const [isCreateOpen, setIsCreateOpen] = useState(false);
 
     const {
@@ -34,7 +35,8 @@ export function ProductsView() {
         pagination,
         setPagination,
         sorting,
-        setSorting
+        setSorting,
+        fetchData
     } = useTableData<Product>({
         tableName: 'products',
         select: '*, companies(name)',
@@ -42,7 +44,7 @@ export function ProductsView() {
         searchColumns: ['name', 'part_number']
     });
 
-    const columns: ColumnDef<Product>[] = [
+    const columns = useMemo<ColumnDef<Product>[]>(() => [
         {
             accessorKey: 'name',
             header: 'Name',
@@ -67,11 +69,11 @@ export function ProductsView() {
             header: 'Created',
             cell: info => new Date(info.getValue() as string).toLocaleDateString(),
         }
-    ];
+    ], []);
 
     const handleCreateSubmit = async (data: any) => {
         try {
-            const { data: newProduct, error } = await supabase
+            const { error } = await supabase
                 .from('products')
                 .insert({
                     ...data,
@@ -82,10 +84,51 @@ export function ProductsView() {
 
             if (error) throw error;
             setIsCreateOpen(false);
-            navigate(`/database/products/${newProduct.id}`);
+            toast.success('Product created successfully');
+            fetchData();
         } catch (err) {
             console.error('Error creating product:', err);
             toast.error('Failed to create product');
+        }
+    };
+
+    const handleBulkDelete = async (selectedRows: Product[]) => {
+        const ids = selectedRows.map(r => r.id);
+        const { error } = await supabase.from('products').delete().in('id', ids);
+        if (error) {
+            console.error('Error deleting products:', error);
+            toast.error('Failed to delete products');
+        } else {
+            fetchData();
+            setRowSelection({});
+            toast.success('Products deleted successfully');
+        }
+    };
+
+    const handleBulkExport = async (selectedRows: Product[]) => {
+        const headers = ['ID', 'Name', 'Part Number', 'Manufacturer', 'Warranty', 'Created At'];
+        const csvContent = [
+            headers.join(','),
+            ...selectedRows.map(row => [
+                row.id,
+                `"${row.name}"`,
+                row.part_number || '',
+                `"${row.companies?.name || ''}"`,
+                row.default_warranty_years || '',
+                row.created_at
+            ].join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `products_export_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     };
 
@@ -116,6 +159,7 @@ export function ProductsView() {
                 <input
                     className="pl-10 w-full border border-gray-300 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Search products..."
+                    autoComplete="off"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -131,6 +175,11 @@ export function ProductsView() {
                 onSortingChange={setSorting}
                 isLoading={isLoading}
                 onRowClick={(row) => navigate(`/database/products/${row.id}`)}
+                enableSelection={true}
+                rowSelection={rowSelection}
+                onRowSelectionChange={setRowSelection}
+                onBulkDelete={handleBulkDelete}
+                onBulkExport={handleBulkExport}
             />
         </ViewContainer>
     );

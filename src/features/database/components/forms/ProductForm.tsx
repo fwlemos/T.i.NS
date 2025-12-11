@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
 import { Label } from '@/components/ui/Label';
 import { Database } from '@/lib/supabase/types';
 import { Loader2 } from 'lucide-react';
@@ -28,10 +29,12 @@ interface ProductFormProps {
     onSubmit: (data: ProductFormValues) => Promise<void>;
     isLoading?: boolean;
     isNested?: boolean;
+    readOnly?: boolean;
 }
 
-export function ProductForm({ initialData, onSubmit, isLoading, isNested = false }: ProductFormProps) {
+export function ProductForm({ initialData, onSubmit, isLoading, isNested = false, readOnly = false }: ProductFormProps) {
     const form = useForm<ProductFormValues>({
+        mode: 'onChange',
         resolver: zodResolver(productSchema),
         defaultValues: {
             name: '',
@@ -74,18 +77,29 @@ export function ProductForm({ initialData, onSubmit, isLoading, isNested = false
 
     const renderFields = () => {
         return (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="name">Product Name</Label>
-                    <Input id="name" {...form.register('name')} placeholder="Super Widget" />
+                    <Input id="name" {...form.register('name')} placeholder="Super Widget" disabled={readOnly} error={!!form.formState.errors.name} />
                     {form.formState.errors.name && (
                         <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
                     )}
                 </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="part_number">Part Number</Label>
-                    <Input id="part_number" {...form.register('part_number')} placeholder="PN-123456" />
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="part_number">Part Number</Label>
+                        <Input id="part_number" {...form.register('part_number')} placeholder="PN-123456" disabled={readOnly} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="default_warranty_years">Warranty (Years)</Label>
+                        <Input
+                            type="number"
+                            id="default_warranty_years"
+                            disabled={readOnly}
+                            {...form.register('default_warranty_years', { valueAsNumber: true })}
+                        />
+                    </div>
                 </div>
 
                 <div className="space-y-2">
@@ -101,6 +115,7 @@ export function ProductForm({ initialData, onSubmit, isLoading, isNested = false
                                 formComponent={ManufacturerForm}
                                 onNestedCreate={handleCreateManufacturer}
                                 placeholder="Select Manufacturer..."
+                                disabled={readOnly}
                             />
                         )}
                     />
@@ -109,32 +124,23 @@ export function ProductForm({ initialData, onSubmit, isLoading, isNested = false
                     )}
                 </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="default_warranty_years">Warranty (Years)</Label>
-                    <Input
-                        type="number"
-                        id="default_warranty_years"
-                        {...form.register('default_warranty_years', { valueAsNumber: true })}
-                    />
-                </div>
-
                 <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="description">Description</Label>
-                    <textarea
+                    <Textarea
                         id="description"
                         {...form.register('description')}
-                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         placeholder="Product description..."
+                        disabled={readOnly}
                     />
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="notes">Notes</Label>
-                    <textarea
+                    <Textarea
                         id="notes"
                         {...form.register('notes')}
-                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         placeholder="Internal notes..."
+                        disabled={readOnly}
                     />
                 </div>
             </div>
@@ -149,18 +155,20 @@ export function ProductForm({ initialData, onSubmit, isLoading, isNested = false
                         <h2 className="text-xl font-bold">{initialData ? 'Edit Product' : 'New Product'}</h2>
                     </div>
                     {renderFields()}
-                    <div className="pt-4 mt-6 border-t">
-                        <Button
-                            type="button"
-                            onClick={form.handleSubmit(onSubmit)}
-                            disabled={isLoading}
-                            className="w-full"
-                            size="lg"
-                        >
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Save Product
-                        </Button>
-                    </div>
+                    {!readOnly && (
+                        <div className="pt-4 mt-6 border-t">
+                            <Button
+                                type="button"
+                                onClick={form.handleSubmit(onSubmit)}
+                                disabled={isLoading}
+                                className="w-full"
+                                size="lg"
+                            >
+                                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Save Product
+                            </Button>
+                        </div>
+                    )}
                 </div>
             ) : (
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -168,12 +176,14 @@ export function ProductForm({ initialData, onSubmit, isLoading, isNested = false
                         <h2 className="text-xl font-bold">{initialData ? 'Edit Product' : 'New Product'}</h2>
                     </div>
                     {renderFields()}
-                    <div className="pt-4 mt-6 border-t">
-                        <Button type="submit" disabled={isLoading} className="w-full" size="lg">
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Save Product
-                        </Button>
-                    </div>
+                    {!readOnly && (
+                        <div className="pt-4 mt-6 border-t">
+                            <Button type="submit" disabled={isLoading} className="w-full" size="lg">
+                                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Save Product
+                            </Button>
+                        </div>
+                    )}
                 </form>
             )}
         </div>

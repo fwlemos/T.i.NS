@@ -7,3 +7,4 @@ export * from './Skeleton';
 export * from './Table';
 export * from './Dialog';
 export * from './DropdownMenu';
+export * from './Textarea';

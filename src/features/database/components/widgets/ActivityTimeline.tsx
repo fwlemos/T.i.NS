@@ -8,9 +8,10 @@ interface ActivityTimelineProps {
     entityType: string;
     createdAt?: string;
     createdBy?: string | null;
+    creatorName?: string | null;
 }
 
-export function ActivityTimeline({ entityId, entityType, createdAt, createdBy }: ActivityTimelineProps) {
+export function ActivityTimeline({ entityId, entityType, createdAt, createdBy, creatorName }: ActivityTimelineProps) {
     const { logs, isLoading } = useAuditLog(entityType, entityId);
 
     if (isLoading) {
@@ -31,9 +32,7 @@ export function ActivityTimeline({ entityId, entityType, createdAt, createdBy }:
             changes: {} as any,
             user_id: createdBy || null,
             created_at: createdAt,
-            user: createdBy ? { full_name: 'Unknown User', avatar_url: null } : undefined // We might fetch user name if we had createdBy ID resolving, assuming generated logs handles it.
-            // For now, if we pass createdBy ID, we don't have the name unless we fetch it. 
-            // Simplification: Display "Record Created" with date.
+            user: { full_name: creatorName || 'Unknown User', avatar_url: null }
         });
     }
 

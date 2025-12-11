@@ -60,6 +60,7 @@ export function GlobalSearchBar() {
                         isOpen && query.length >= 2 ? "rounded-b-none" : ""
                     )}
                     placeholder="Search... (Cmd+K)"
+                    autoComplete="off"
                 />
                 {query && (
                     <button

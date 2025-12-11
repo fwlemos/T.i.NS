@@ -16,6 +16,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/Popover";
 import { supabase } from "@/lib/supabase/client";
+import { AuditService } from "@/features/database/services/AuditService";
 
 interface RelationalFieldProps {
     label: string;
@@ -31,6 +32,7 @@ interface RelationalFieldProps {
     onNestedCreate: (data: any) => Promise<string>; // Must return the new ID
     placeholder?: string;
     className?: string;
+    disabled?: boolean;
 }
 
 export function RelationalField({
@@ -42,6 +44,7 @@ export function RelationalField({
     onNestedCreate,
     placeholder = "Select...",
     className,
+    disabled = false,
 }: RelationalFieldProps) {
     const [open, setOpen] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
@@ -155,6 +158,35 @@ export function RelationalField({
 
                 if (error) throw error;
                 resultId = selectedItemDetails.id;
+
+                // Log the update via AuditService
+                // Map singular entityType to plural table name for consistency
+                const tableMap: Record<string, string> = {
+                    'company': 'companies',
+                    'manufacturer': 'manufacturers',
+                    'contact': 'contacts'
+                };
+                const pluralTable = tableMap[entityType] || entityType + 's';
+
+                // Calculate diff
+                // We need to merge original with updates to see real diff, 
+                // but selectedItemDetails might be partial. 
+                // Best effort: compare keys present in updateData against selectedItemDetails
+                const diff: Record<string, any> = {};
+                Object.keys(updateData).forEach(key => {
+                    const oldVal = selectedItemDetails[key];
+                    const newVal = updateData[key];
+                    // Very basic diff
+                    if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+                        diff[key] = { old: oldVal, new: newVal };
+                    }
+                });
+
+                if (Object.keys(diff).length > 0) {
+                    // Dynamically import or require AuditService if not available in scope, 
+                    // or assume it's imported at top (I will add import).
+                    await AuditService.logChange(pluralTable, resultId, 'UPDATE', diff);
+                }
             } else {
                 resultId = await onNestedCreate(data);
             }
@@ -239,15 +271,17 @@ export function RelationalField({
                     <p className="text-xs text-muted-foreground">{getLocationString(selectedItemDetails)}</p>
                 </div>
             </div>
-            <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={handleEdit} type="button">
-                    {/* Edit Icon */}
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={handleRemove} type="button">
-                    <X className="h-4 w-4" />
-                </Button>
-            </div>
+            {!disabled && (
+                <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={handleEdit} type="button">
+                        {/* Edit Icon */}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={handleRemove} type="button">
+                        <X className="h-4 w-4" />
+                    </Button>
+                </div>
+            )}
         </div>
     );
 
@@ -267,9 +301,11 @@ export function RelationalField({
                                 variant="outline"
                                 role="combobox"
                                 aria-expanded={open}
+                                disabled={disabled}
                                 className={cn(
                                     "w-full justify-between font-normal text-left",
-                                    !selectedItemName && "text-muted-foreground"
+                                    !selectedItemName && "text-muted-foreground",
+                                    disabled && "opacity-50 cursor-not-allowed"
                                 )}
                             >
                                 {selectedItemName || placeholder}

@@ -145,7 +145,7 @@ export function CompaniesView() {
 
     const handleCreateSubmit = async (data: any) => {
         try {
-            const { data: newCompany, error } = await supabase
+            const { error } = await supabase
                 .from('companies')
                 .insert({
                     ...data,
@@ -157,7 +157,8 @@ export function CompaniesView() {
 
             if (error) throw error;
             setIsCreateOpen(false);
-            navigate(`/database/companies/${newCompany.id}`);
+            toast.success('Company created successfully');
+            fetchData();
         } catch (err) {
             console.error('Error creating company:', err);
             toast.error('Failed to create company');
@@ -191,6 +192,7 @@ export function CompaniesView() {
                 <input
                     className="pl-10 w-full border border-gray-300 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Search companies..."
+                    autoComplete="off"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />

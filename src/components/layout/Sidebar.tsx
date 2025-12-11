@@ -53,7 +53,7 @@ export function Sidebar() {
             </div>
 
             <nav className="flex-1 space-y-0.5">
-                {NAV_ITEMS.map((item) => (
+                {NAV_ITEMS.filter(item => item.label !== 'Settings').map((item) => (
                     <NavLink
                         key={item.href}
                         to={item.href}
@@ -72,6 +72,29 @@ export function Sidebar() {
                     </NavLink>
                 ))}
             </nav>
+
+            {/* Bottom Section - Settings */}
+            <div className="mt-auto space-y-2 mb-2">
+                <div className="h-px bg-white/10 mx-4" />
+                {NAV_ITEMS.filter(item => item.label === 'Settings').map((item) => (
+                    <NavLink
+                        key={item.href}
+                        to={item.href}
+                        className={({ isActive }) =>
+                            cn(
+                                "flex items-center rounded-lg px-2.5 py-2 text-sm font-medium transition-all duration-200 justify-center", // Added justify-center
+                                isActive
+                                    ? "bg-white/10 text-white"
+                                    : "text-gray-400 hover:bg-white/5 hover:text-white",
+                                isCollapsed ? "w-10 h-10 mx-auto" : "mx-2"
+                            )
+                        }
+                    >
+                        <item.icon size={18} strokeWidth={1.5} />
+                        {!isCollapsed && <span className="ml-2.5">{item.label}</span>}
+                    </NavLink>
+                ))}
+            </div>
         </aside>
     );
 }

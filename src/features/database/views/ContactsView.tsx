@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 import { ColumnDef, RowSelectionState } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/DataTable';
@@ -124,7 +125,7 @@ export function ContactsView() {
 
     const handleCreateSubmit = async (data: any) => {
         try {
-            const { data: newContact, error } = await supabase
+            const { error } = await supabase
                 .from('contacts')
                 .insert({
                     ...data,
@@ -135,11 +136,11 @@ export function ContactsView() {
 
             if (error) throw error;
             setIsCreateOpen(false);
-            navigate(`/database/contacts/${newContact.id}`);
+            toast.success('Contact created successfully');
+            fetchData();
         } catch (err: any) {
             console.error('Error creating contact:', JSON.stringify(err, null, 2));
-            // toast.error('Failed to create contact');
-            alert(`Failed to create contact: ${err?.message || err?.error_description || JSON.stringify(err)}`);
+            toast.error(`Failed to create contact: ${err?.message || 'Unknown error'}`);
         }
     };
 
@@ -171,6 +172,7 @@ export function ContactsView() {
                 <input
                     className="pl-10 w-full border border-gray-300 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Search contacts..."
+                    autoComplete="off"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, RowSelectionState } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/DataTable';
 import { ViewContainer } from '../components/ViewContainer';
 import { useTableData } from '../hooks/useTableData';
@@ -25,6 +25,7 @@ type Manufacturer = Database['public']['Tables']['companies']['Row'] & {
 export function ManufacturersView() {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
+    const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
     const [isCreateOpen, setIsCreateOpen] = useState(false);
 
     const {
@@ -34,7 +35,8 @@ export function ManufacturersView() {
         pagination,
         setPagination,
         sorting,
-        setSorting
+        setSorting,
+        fetchData
     } = useTableData<Manufacturer>({
         tableName: 'companies',
         select: '*, products(count)',
@@ -77,7 +79,7 @@ export function ManufacturersView() {
 
     const handleCreateSubmit = async (data: any) => {
         try {
-            const { data: newManufacturer, error } = await supabase
+            const { error } = await supabase
                 .from('companies')
                 .insert({
                     ...data,
@@ -89,10 +91,51 @@ export function ManufacturersView() {
 
             if (error) throw error;
             setIsCreateOpen(false);
-            navigate(`/database/manufacturers/${newManufacturer.id}`);
+            toast.success('Manufacturer created successfully');
+            fetchData();
         } catch (err) {
             console.error('Error creating manufacturer:', err);
             toast.error('Failed to create manufacturer');
+        }
+    };
+
+    const handleBulkDelete = async (selectedRows: Manufacturer[]) => {
+        const ids = selectedRows.map(r => r.id);
+        const { error } = await supabase.from('companies').delete().in('id', ids);
+        if (error) {
+            console.error('Error deleting manufacturers:', error);
+            toast.error('Failed to delete manufacturers');
+        } else {
+            fetchData();
+            setRowSelection({});
+            toast.success('Manufacturers deleted successfully');
+        }
+    };
+
+    const handleBulkExport = async (selectedRows: Manufacturer[]) => {
+        const headers = ['ID', 'Name', 'Exclusivity', 'Contract Valid Until', 'Products Count', 'Created At'];
+        const csvContent = [
+            headers.join(','),
+            ...selectedRows.map(row => [
+                row.id,
+                `"${row.name}"`,
+                row.has_exclusivity ? 'Yes' : 'No',
+                row.contract_validity || '',
+                row.products?.[0]?.count || 0,
+                row.created_at
+            ].join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `manufacturers_export_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     };
 
@@ -123,6 +166,7 @@ export function ManufacturersView() {
                 <input
                     className="pl-10 w-full border border-gray-300 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Search manufacturers..."
+                    autoComplete="off"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -138,6 +182,11 @@ export function ManufacturersView() {
                 onSortingChange={setSorting}
                 isLoading={isLoading}
                 onRowClick={(row) => navigate(`/database/manufacturers/${row.id}`)}
+                enableSelection={true}
+                rowSelection={rowSelection}
+                onRowSelectionChange={setRowSelection}
+                onBulkDelete={handleBulkDelete}
+                onBulkExport={handleBulkExport}
             />
         </ViewContainer>
     );

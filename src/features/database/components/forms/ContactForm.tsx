@@ -35,10 +35,12 @@ interface ContactFormProps {
     onSubmit: (data: ContactFormValues) => Promise<void>;
     isLoading?: boolean;
     isNested?: boolean;
+    readOnly?: boolean;
 }
 
-export function ContactForm({ initialData, onSubmit, isLoading, isNested = false }: ContactFormProps) {
+export function ContactForm({ initialData, onSubmit, isLoading, isNested = false, readOnly = false }: ContactFormProps) {
     const form = useForm<ContactFormValues>({
+        mode: 'onChange',
         resolver: zodResolver(contactSchema),
         defaultValues: {
             name: '',
@@ -99,33 +101,57 @@ export function ContactForm({ initialData, onSubmit, isLoading, isNested = false
                 <div className="space-y-6">
                     <div className="flex justify-between items-center">
                         <h2 className="text-xl font-bold">{initialData ? 'Edit Contact' : 'New Contact'}</h2>
+                        <div className="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                id="is_individual"
+                                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                {...form.register('is_individual')}
+                                disabled={readOnly}
+                            />
+                            <Label htmlFor="is_individual" className="cursor-pointer font-normal">Is Individual (Direct Client)</Label>
+                        </div>
                     </div>
                     {renderFields()}
-                    <div className="pt-4 mt-6 border-t">
-                        <Button
-                            type="button"
-                            onClick={form.handleSubmit(onSubmit, (errors) => console.error("Nested Form Validation Errors:", errors))}
-                            disabled={isLoading}
-                            className="w-full"
-                            size="lg"
-                        >
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Save Contact
-                        </Button>
-                    </div>
+                    {!readOnly && (
+                        <div className="pt-4 mt-6 border-t">
+                            <Button
+                                type="button"
+                                onClick={form.handleSubmit(onSubmit, (errors) => console.error("Nested Form Validation Errors:", errors))}
+                                disabled={isLoading}
+                                className="w-full"
+                                size="lg"
+                            >
+                                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Save Contact
+                            </Button>
+                        </div>
+                    )}
                 </div>
             ) : (
                 <form onSubmit={form.handleSubmit(onSubmit, (errors) => console.error("Form Validation Errors:", errors))} className="space-y-6">
                     <div className="flex justify-between items-center">
                         <h2 className="text-xl font-bold">{initialData ? 'Edit Contact' : 'New Contact'}</h2>
+                        <div className="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                id="is_individual"
+                                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                {...form.register('is_individual')}
+                                disabled={readOnly}
+                            />
+                            <Label htmlFor="is_individual" className="cursor-pointer font-normal">Is Individual (Direct Client)</Label>
+                        </div>
                     </div>
                     {renderFields()}
-                    <div className="pt-4 mt-6 border-t">
-                        <Button type="submit" disabled={isLoading} className="w-full" size="lg">
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Save Contact
-                        </Button>
-                    </div>
+                    {!readOnly && (
+                        <div className="pt-4 mt-6 border-t">
+                            <Button type="submit" disabled={isLoading} className="w-full" size="lg">
+                                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Save Contact
+                            </Button>
+                        </div>
+                    )}
                 </form>
             )}
         </div>
@@ -137,7 +163,7 @@ export function ContactForm({ initialData, onSubmit, isLoading, isNested = false
                 {/* Basic Info */}
                 <div className="space-y-2">
                     <Label htmlFor="name">Name</Label>
-                    <Input id="name" {...form.register('name')} placeholder="John Doe" />
+                    <Input id="name" {...form.register('name')} placeholder="John Doe" autoComplete="off" disabled={readOnly} error={!!form.formState.errors.name} />
                     {form.formState.errors.name && (
                         <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
                     )}
@@ -145,12 +171,12 @@ export function ContactForm({ initialData, onSubmit, isLoading, isNested = false
 
                 <div className="space-y-2">
                     <Label htmlFor="job_title">Job Title</Label>
-                    <Input id="job_title" {...form.register('job_title')} placeholder="Software Engineer" />
+                    <Input id="job_title" {...form.register('job_title')} placeholder="Software Engineer" autoComplete="organization-title" disabled={readOnly} />
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" {...form.register('email')} placeholder="john@example.com" />
+                    <Input id="email" {...form.register('email')} placeholder="john@example.com" autoComplete="new-password" disabled={readOnly} error={!!form.formState.errors.email} />
                     {form.formState.errors.email && (
                         <p className="text-sm text-red-500">{form.formState.errors.email.message}</p>
                     )}
@@ -158,19 +184,10 @@ export function ContactForm({ initialData, onSubmit, isLoading, isNested = false
 
                 <div className="space-y-2">
                     <Label htmlFor="phone">Phone</Label>
-                    <Input id="phone" {...form.register('phone')} placeholder="+1 234 567 8900" />
+                    <Input id="phone" {...form.register('phone')} placeholder="+1 234 567 8900" autoComplete="off" disabled={readOnly} />
                 </div>
 
-                {/* Individual Checkbox */}
-                <div className="flex items-center space-x-2 py-2">
-                    <input
-                        type="checkbox"
-                        id="is_individual"
-                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                        {...form.register('is_individual')}
-                    />
-                    <Label htmlFor="is_individual" className="cursor-pointer">Is Individual (Direct Client)</Label>
-                </div>
+                {/* Individual Checkbox moved to header */}
 
                 {/* Conditional Company Selection */}
                 {!isIndividual && (
@@ -187,6 +204,7 @@ export function ContactForm({ initialData, onSubmit, isLoading, isNested = false
                                     formComponent={CompanyForm}
                                     onNestedCreate={handleCreateCompany}
                                     placeholder="Select Company..."
+                                    disabled={readOnly}
                                 />
                             )}
                         />
@@ -199,26 +217,26 @@ export function ContactForm({ initialData, onSubmit, isLoading, isNested = false
                         <h3 className="font-medium text-sm">Address</h3>
                         <div className="space-y-2">
                             <Label htmlFor="street">Street</Label>
-                            <Input id="street" {...form.register('street')} placeholder="123 Main St" />
+                            <Input id="street" {...form.register('street')} placeholder="123 Main St" disabled={readOnly} />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="city">City</Label>
-                                <Input id="city" {...form.register('city')} placeholder="New York" />
+                                <Input id="city" {...form.register('city')} placeholder="New York" disabled={readOnly} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="state_province">State/Province</Label>
-                                <Input id="state_province" {...form.register('state_province')} placeholder="NY" />
+                                <Input id="state_province" {...form.register('state_province')} placeholder="NY" disabled={readOnly} />
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="postal_code">Postal Code</Label>
-                                <Input id="postal_code" {...form.register('postal_code')} placeholder="10001" />
+                                <Input id="postal_code" {...form.register('postal_code')} placeholder="10001" disabled={readOnly} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="country">Country</Label>
-                                <Input id="country" {...form.register('country')} placeholder="USA" />
+                                <Input id="country" {...form.register('country')} placeholder="USA" disabled={readOnly} />
                             </div>
                         </div>
                     </div>
@@ -227,7 +245,7 @@ export function ContactForm({ initialData, onSubmit, isLoading, isNested = false
                 {/* Notes */}
                 <div className="space-y-2">
                     <Label htmlFor="notes">Notes</Label>
-                    <Input id="notes" {...form.register('notes')} placeholder="Additional notes..." />
+                    <Input id="notes" {...form.register('notes')} placeholder="Additional notes..." disabled={readOnly} />
                 </div>
             </div>
         );
