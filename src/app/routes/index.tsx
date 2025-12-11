@@ -15,6 +15,10 @@ import { ManufacturerDetail } from '@/features/database/pages/ManufacturerDetail
 import { ProductsView } from '@/features/database/views/ProductsView';
 import { ProductDetail } from '@/features/database/pages/ProductDetail';
 import { DatabaseLayout } from '@/features/database/components/layout/DatabaseLayout';
+import { CRMLayout } from '@/features/crm/layouts/CRMLayout';
+import { CRMPage } from '@/features/crm/pages/CRMPage';
+import { CRMSettingsPage } from '@/features/crm/pages/CRMSettingsPage';
+import { OpportunityDetail } from '@/features/crm/pages/OpportunityDetail';
 
 const router = createBrowserRouter([
     {
@@ -40,7 +44,15 @@ const router = createBrowserRouter([
                             { path: 'products/:id', element: <ProductDetail /> },
                         ]
                     },
-                    { path: 'crm', element: <div className="p-4">CRM Module Placeholder</div> },
+                    {
+                        path: 'crm',
+                        element: <CRMLayout />,
+                        children: [
+                            { index: true, element: <CRMPage /> },
+                            { path: 'settings', element: <CRMSettingsPage /> },
+                            { path: 'opportunities/:id', element: <OpportunityDetail /> },
+                        ]
+                    },
                     { path: 'orders', element: <div className="p-4">Orders Module Placeholder</div> },
                     { path: 'services', element: <div className="p-4">Services Module Placeholder</div> },
                     { path: 'finances', element: <div className="p-4">Finances Module Placeholder</div> },
