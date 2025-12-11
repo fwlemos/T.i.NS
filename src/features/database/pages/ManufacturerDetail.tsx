@@ -6,7 +6,6 @@ import { RelatedOpportunities } from '../components/widgets/RelatedOpportunities
 import { ManufacturerForm } from '../components/forms/ManufacturerForm';
 import { BankingAccountsSection } from '../components/manufacturers/BankingAccountsSection';
 import { ContractUploadSection } from '../components/manufacturers/ContractUploadSection';
-import { AuditService } from '../services/AuditService';
 import { supabase } from '@/lib/supabase/client';
 import { Database } from '@/lib/supabase/types';
 import { Loader2 } from 'lucide-react';
@@ -53,11 +52,7 @@ export function ManufacturerDetail() {
 
             if (error) throw error;
 
-            // Audit logging
-            const changes = AuditService.calculateDiff(manufacturer, data);
-            if (Object.keys(changes).length > 0) {
-                await AuditService.logChange('manufacturer', id, 'UPDATE', changes);
-            }
+            if (error) throw error;
 
             toast.success('Manufacturer updated successfully');
             fetchManufacturer();
@@ -86,7 +81,7 @@ export function ManufacturerDetail() {
             leftContent={
                 <ActivityTimeline
                     entityId={id!}
-                    entityType="company"
+                    entityType="manufacturers" // Changed from 'manufacturer' to match DB table name
                     createdAt={manufacturer?.created_at}
                     createdBy={manufacturer?.created_by}
                 />

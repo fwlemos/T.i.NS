@@ -8,7 +8,6 @@ import { supabase } from '@/lib/supabase/client';
 import { Database } from '@/lib/supabase/types';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { AuditService } from '../services/AuditService';
 
 type Contact = Database['public']['Tables']['contacts']['Row'];
 
@@ -50,11 +49,7 @@ export function ContactDetail() {
 
             if (error) throw error;
 
-            // Audit logging
-            const changes = AuditService.calculateDiff(contact, data);
-            if (Object.keys(changes).length > 0) {
-                await AuditService.logChange('contact', id, 'UPDATE', changes);
-            }
+            if (error) throw error;
 
             toast.success('Contact updated successfully');
             setContact({ ...contact, ...data });
@@ -83,7 +78,7 @@ export function ContactDetail() {
             leftContent={
                 <ActivityTimeline
                     entityId={id!}
-                    entityType="contact"
+                    entityType="contacts" // Changed from 'contact' to match DB table name
                     createdAt={contact?.created_at}
                     createdBy={contact?.created_by}
                 />

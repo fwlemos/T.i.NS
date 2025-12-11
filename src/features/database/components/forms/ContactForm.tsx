@@ -84,6 +84,7 @@ export function ContactForm({ initialData, onSubmit, isLoading, isNested = false
                 ...data,
                 type: 'company',
                 updated_at: new Date().toISOString(),
+                created_by: (await supabase.auth.getUser()).data.user?.id
             })
             .select('id')
             .single();
@@ -103,7 +104,7 @@ export function ContactForm({ initialData, onSubmit, isLoading, isNested = false
                     <div className="pt-4 mt-6 border-t">
                         <Button
                             type="button"
-                            onClick={form.handleSubmit(onSubmit)}
+                            onClick={form.handleSubmit(onSubmit, (errors) => console.error("Nested Form Validation Errors:", errors))}
                             disabled={isLoading}
                             className="w-full"
                             size="lg"
@@ -114,7 +115,7 @@ export function ContactForm({ initialData, onSubmit, isLoading, isNested = false
                     </div>
                 </div>
             ) : (
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <form onSubmit={form.handleSubmit(onSubmit, (errors) => console.error("Form Validation Errors:", errors))} className="space-y-6">
                     <div className="flex justify-between items-center">
                         <h2 className="text-xl font-bold">{initialData ? 'Edit Contact' : 'New Contact'}</h2>
                     </div>

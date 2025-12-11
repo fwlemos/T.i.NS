@@ -77,6 +77,29 @@ export function useAuditLog(entityType: string, entityId: string) {
         }
 
         fetchLogs();
+
+        // Real-time subscription
+        const channel = supabase
+            .channel('audit_log_changes')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'audit_logs',
+                    filter: `entity_id=eq.${entityId}`
+                },
+                (payload) => {
+                    // New log inserted, refetch
+                    // Ideally we could just append, but fetching ensures we have user data etc.
+                    fetchLogs();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, [entityType, entityId]);
 
     return { logs, isLoading, error };

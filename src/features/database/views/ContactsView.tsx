@@ -136,9 +136,10 @@ export function ContactsView() {
             if (error) throw error;
             setIsCreateOpen(false);
             navigate(`/database/contacts/${newContact.id}`);
-        } catch (err) {
-            console.error('Error creating contact:', err);
+        } catch (err: any) {
+            console.error('Error creating contact:', JSON.stringify(err, null, 2));
             // toast.error('Failed to create contact');
+            alert(`Failed to create contact: ${err?.message || err?.error_description || JSON.stringify(err)}`);
         }
     };
 

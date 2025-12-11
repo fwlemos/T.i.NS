@@ -4,7 +4,6 @@ import { ThreeColumnLayout } from '../components/layout/ThreeColumnLayout';
 import { ActivityTimeline } from '../components/widgets/ActivityTimeline';
 import { RelatedOpportunities } from '../components/widgets/RelatedOpportunities';
 import { CompanyForm } from '../components/forms/CompanyForm';
-import { AuditService } from '../services/AuditService';
 import { supabase } from '@/lib/supabase/client';
 import { Database } from '@/lib/supabase/types';
 import { Loader2 } from 'lucide-react';
@@ -50,11 +49,7 @@ export function CompanyDetail() {
 
             if (error) throw error;
 
-            // Audit logging
-            const changes = AuditService.calculateDiff(company, data);
-            if (Object.keys(changes).length > 0) {
-                await AuditService.logChange('company', id, 'UPDATE', changes);
-            }
+            if (error) throw error;
 
             toast.success('Company updated successfully');
             setCompany({ ...company, ...data });
@@ -83,7 +78,7 @@ export function CompanyDetail() {
             leftContent={
                 <ActivityTimeline
                     entityId={id!}
-                    entityType="company"
+                    entityType="companies" // Changed from 'company' to match DB table name
                     createdAt={company?.created_at}
                     createdBy={company?.created_by}
                 />

@@ -81,9 +81,29 @@ function TimelineItem({ log }: { log: AuditLogWithUser }) {
     const formatChanges = (changes: any) => {
         if (!changes || Object.keys(changes).length === 0) return null;
 
+        const entries = Object.entries(changes).filter(([key, val]: [string, any]) => {
+            // Filter technical fields that shouldn't be shown to users
+            if (['id', 'updated_at', 'created_at', 'created_by', 'entity_id', 'entity_type'].includes(key)) return false;
+
+            const oldVal = val?.old;
+            const newVal = val?.new;
+            // Filter if both are empty/null/undefined
+            if (!oldVal && !newVal) return false;
+
+            // Filter if values are effectively equal (using JSON stringify for objects)
+            if (oldVal === newVal) return false;
+            if (typeof oldVal === 'object' && typeof newVal === 'object') {
+                if (JSON.stringify(oldVal) === JSON.stringify(newVal)) return false;
+            }
+
+            return true;
+        });
+
+        if (entries.length === 0) return null;
+
         return (
             <div className="mt-2 text-xs bg-gray-50 dark:bg-muted p-2 rounded border space-y-1">
-                {Object.entries(changes).map(([key, val]: [string, any]) => (
+                {entries.map(([key, val]: [string, any]) => (
                     <div key={key} className="flex flex-col sm:flex-row gap-1">
                         <span className="font-semibold capitalize">{key.replace(/_/g, ' ')}:</span>
                         <div className="flex gap-1 text-gray-600 dark:text-gray-400">
@@ -100,7 +120,14 @@ function TimelineItem({ log }: { log: AuditLogWithUser }) {
     const formatVal = (v: any) => {
         if (v === null || v === undefined) return 'Empty';
         if (typeof v === 'boolean') return v ? 'Yes' : 'No';
-        if (typeof v === 'object') return JSON.stringify(v);
+        if (typeof v === 'object') {
+            // Handle Address or generic objects nicely
+            if (!Object.keys(v).some(k => v[k])) return 'Empty'; // All keys empty
+            return Object.entries(v)
+                .filter(([_, val]) => val) // Only show non-empty fields
+                .map(([key, val]) => `${key}: ${val}`)
+                .join(', ');
+        }
         return String(v);
     };
 

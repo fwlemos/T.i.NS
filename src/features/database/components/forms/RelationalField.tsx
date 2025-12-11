@@ -145,9 +145,12 @@ export function RelationalField({
             let resultId = "";
             if (isEditing && selectedItemDetails?.id) {
                 const table = entityType === 'contact' ? 'contacts' : 'companies';
+                // Remove 'type' from update data to prevent overwriting it with null/undefined if passed
+                const { type, ...updateData } = data;
+                console.log('DEBUG: Updating nested entity:', { table, originalData: data, updatePayload: updateData });
                 const { error } = await supabase
                     .from(table)
-                    .update({ ...data, updated_at: new Date().toISOString() })
+                    .update({ ...updateData, updated_at: new Date().toISOString() })
                     .eq('id', selectedItemDetails.id);
 
                 if (error) throw error;
@@ -164,8 +167,13 @@ export function RelationalField({
                 if (entityType === 'contact') selectQuery += ", city, state_province, country";
                 else selectQuery += ", address";
 
-                const { data: newData } = await supabase.from(table).select(selectQuery).eq('id', resultId).single();
-                if (data && !error) {
+                const { data: newData, error: fetchError } = await supabase.from(table).select(selectQuery).eq('id', resultId).single();
+
+                if (newData && !fetchError) {
+                    setSelectedItemName((newData as any).name);
+                    setSelectedItemDetails(newData);
+                } else if (data) {
+                    // Fallback to form data if fetch fails (e.g. optimistic)
                     setSelectedItemName((data as any).name);
                     setSelectedItemDetails(data);
                 }
@@ -174,8 +182,13 @@ export function RelationalField({
                 setIsEditing(false);
                 setOpen(false);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to save nested entity", error);
+            if (error?.code === '23505') {
+                alert('A record with this name already exists. Please choose a different name.');
+            } else {
+                alert(`Failed to save: ${error?.message || 'Unknown error'}`);
+            }
         } finally {
             setIsLoading(false);
         }

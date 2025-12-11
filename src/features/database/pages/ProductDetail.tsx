@@ -4,7 +4,6 @@ import { ThreeColumnLayout } from '../components/layout/ThreeColumnLayout';
 import { ActivityTimeline } from '../components/widgets/ActivityTimeline';
 import { RelatedOpportunities } from '../components/widgets/RelatedOpportunities';
 import { ProductForm } from '../components/forms/ProductForm';
-import { AuditService } from '../services/AuditService';
 import { supabase } from '@/lib/supabase/client';
 import { Database } from '@/lib/supabase/types';
 import { Loader2 } from 'lucide-react';
@@ -50,11 +49,7 @@ export function ProductDetail() {
 
             if (error) throw error;
 
-            // Audit logging
-            const changes = AuditService.calculateDiff(product, data);
-            if (Object.keys(changes).length > 0) {
-                await AuditService.logChange('product', id, 'UPDATE', changes);
-            }
+            if (error) throw error;
 
             toast.success('Product updated successfully');
             setProduct({ ...product, ...data });
@@ -83,7 +78,7 @@ export function ProductDetail() {
             leftContent={
                 <ActivityTimeline
                     entityId={id!}
-                    entityType="product"
+                    entityType="products" // Changed from 'product' to match DB table name
                     createdAt={product?.created_at}
                     createdBy={product?.created_by}
                 />
