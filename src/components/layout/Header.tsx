@@ -18,7 +18,7 @@ export function Header() {
     const { user, signOut } = useAuth();
 
     return (
-        <header className="flex h-16 items-center justify-between border-b bg-card px-6">
+        <header className="flex h-16 items-center justify-between border-b border-border/40 bg-background/50 px-6 backdrop-blur-sm sticky top-0 z-10">
             <div className="flex items-center gap-4">
                 {/* Placeholder for Breadcrumbs or Page Title */}
                 <h1 className="text-lg font-semibold">Dashboard</h1>
