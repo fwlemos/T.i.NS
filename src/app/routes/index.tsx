@@ -5,6 +5,16 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { LoginPage } from './LoginPage';
 import AdminPage from './AdminPage';
 
+import { Navigate } from 'react-router-dom';
+import { ContactsView } from '@/features/database/views/ContactsView';
+import { ContactDetail } from '@/features/database/pages/ContactDetail';
+import { CompaniesView } from '@/features/database/views/CompaniesView';
+import { CompanyDetail } from '@/features/database/pages/CompanyDetail';
+import { ManufacturersView } from '@/features/database/views/ManufacturersView';
+import { ManufacturerDetail } from '@/features/database/pages/ManufacturerDetail';
+import { ProductsView } from '@/features/database/views/ProductsView';
+import { ProductDetail } from '@/features/database/pages/ProductDetail';
+
 const router = createBrowserRouter([
     {
         element: <ProtectedRoute />,
@@ -14,7 +24,20 @@ const router = createBrowserRouter([
                 element: <MainLayout />,
                 children: [
                     { index: true, element: <div className="p-4">Dashboard Content</div> },
-                    { path: 'database', element: <div className="p-4">Database Module Placeholder</div> },
+                    {
+                        path: 'database',
+                        children: [
+                            { index: true, element: <Navigate to="contacts" replace /> },
+                            { path: 'contacts', element: <ContactsView /> },
+                            { path: 'contacts/:id', element: <ContactDetail /> },
+                            { path: 'companies', element: <CompaniesView /> },
+                            { path: 'companies/:id', element: <CompanyDetail /> },
+                            { path: 'manufacturers', element: <ManufacturersView /> },
+                            { path: 'manufacturers/:id', element: <ManufacturerDetail /> },
+                            { path: 'products', element: <ProductsView /> },
+                            { path: 'products/:id', element: <ProductDetail /> },
+                        ]
+                    },
                     { path: 'crm', element: <div className="p-4">CRM Module Placeholder</div> },
                     { path: 'orders', element: <div className="p-4">Orders Module Placeholder</div> },
                     { path: 'services', element: <div className="p-4">Services Module Placeholder</div> },

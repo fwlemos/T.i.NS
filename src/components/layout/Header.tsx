@@ -11,6 +11,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/DropdownMenu";
+import { GlobalSearchBar } from '@/features/database/components/GlobalSearchBar';
 
 export function Header() {
     const { theme, setTheme } = useTheme();
@@ -21,6 +22,10 @@ export function Header() {
             <div className="flex items-center gap-4">
                 {/* Placeholder for Breadcrumbs or Page Title */}
                 <h1 className="text-lg font-semibold">Dashboard</h1>
+            </div>
+
+            <div className="flex-1 max-w-xl mx-4">
+                <GlobalSearchBar />
             </div>
 
             <div className="flex items-center gap-4">
