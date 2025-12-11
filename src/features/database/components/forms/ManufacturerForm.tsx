@@ -24,9 +24,10 @@ interface ManufacturerFormProps {
     initialData?: Manufacturer;
     onSubmit: (data: ManufacturerFormValues) => Promise<void>;
     isLoading?: boolean;
+    isNested?: boolean;
 }
 
-export function ManufacturerForm({ initialData, onSubmit, isLoading }: ManufacturerFormProps) {
+export function ManufacturerForm({ initialData, onSubmit, isLoading, isNested = false }: ManufacturerFormProps) {
     const form = useForm<ManufacturerFormValues>({
         resolver: zodResolver(manufacturerSchema),
         defaultValues: {
@@ -49,9 +50,12 @@ export function ManufacturerForm({ initialData, onSubmit, isLoading }: Manufactu
     }, [initialData, form]);
 
     return (
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 bg-white dark:bg-card p-6 rounded-lg shadow-sm border">
+        <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className={isNested ? "space-y-6" : "space-y-6 bg-white dark:bg-card p-6 rounded-lg shadow-sm border"}
+        >
             <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold">Manufacturer Details</h2>
+                <h2 className="text-xl font-bold">{isNested ? '' : 'Manufacturer Details'}</h2>
                 <Button type="submit" disabled={isLoading}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Save Changes

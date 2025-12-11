@@ -7,6 +7,17 @@ import { useTableData } from '../hooks/useTableData';
 import { Search } from 'lucide-react';
 import { Database } from '@/lib/supabase/types';
 
+import { supabase } from '@/lib/supabase/client';
+import { toast } from 'sonner';
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetDescription,
+} from '@/components/ui/Sheet';
+import { ManufacturerForm } from '../components/forms/ManufacturerForm';
+
 type Manufacturer = Database['public']['Tables']['companies']['Row'] & {
     products: [{ count: number }];
 };
@@ -14,6 +25,7 @@ type Manufacturer = Database['public']['Tables']['companies']['Row'] & {
 export function ManufacturersView() {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
 
     const {
         data,
@@ -63,12 +75,49 @@ export function ManufacturersView() {
         }
     ];
 
+    const handleCreateSubmit = async (data: any) => {
+        try {
+            const { data: newManufacturer, error } = await supabase
+                .from('companies')
+                .insert({
+                    ...data,
+                    type: 'manufacturer',
+                    created_by: (await supabase.auth.getUser()).data.user?.id
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+            setIsCreateOpen(false);
+            navigate(`/database/manufacturers/${newManufacturer.id}`);
+        } catch (err) {
+            console.error('Error creating manufacturer:', err);
+            toast.error('Failed to create manufacturer');
+        }
+    };
+
     return (
         <ViewContainer
             title="Manufacturers"
             description="Manage your manufacturers and partners."
-            onCreate={() => console.log('Create Manufacturer')}
+            onCreate={() => setIsCreateOpen(true)}
         >
+            <Sheet open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <SheetContent
+                    className="overflow-y-auto"
+                    container={document.getElementById('database-drawer-container')}
+                >
+                    <SheetHeader>
+                        <SheetTitle>Create New Manufacturer</SheetTitle>
+                        <SheetDescription>
+                            Add a new manufacturer to the database. Click save when you're done.
+                        </SheetDescription>
+                    </SheetHeader>
+                    <div className="mt-6">
+                        <ManufacturerForm onSubmit={handleCreateSubmit} isLoading={false} />
+                    </div>
+                </SheetContent>
+            </Sheet>
             <div className="mb-4 relative max-w-sm">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input

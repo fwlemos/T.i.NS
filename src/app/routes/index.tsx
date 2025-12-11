@@ -14,6 +14,7 @@ import { ManufacturersView } from '@/features/database/views/ManufacturersView';
 import { ManufacturerDetail } from '@/features/database/pages/ManufacturerDetail';
 import { ProductsView } from '@/features/database/views/ProductsView';
 import { ProductDetail } from '@/features/database/pages/ProductDetail';
+import { DatabaseLayout } from '@/features/database/components/layout/DatabaseLayout';
 
 const router = createBrowserRouter([
     {
@@ -26,6 +27,7 @@ const router = createBrowserRouter([
                     { index: true, element: <div className="p-4">Dashboard Content</div> },
                     {
                         path: 'database',
+                        element: <DatabaseLayout />,
                         children: [
                             { index: true, element: <Navigate to="contacts" replace /> },
                             { path: 'contacts', element: <ContactsView /> },

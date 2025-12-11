@@ -27,9 +27,10 @@ interface ContactFormProps {
     initialData?: Contact;
     onSubmit: (data: ContactFormValues) => Promise<void>;
     isLoading?: boolean;
+    isNested?: boolean;
 }
 
-export function ContactForm({ initialData, onSubmit, isLoading }: ContactFormProps) {
+export function ContactForm({ initialData, onSubmit, isLoading, isNested = false }: ContactFormProps) {
     const form = useForm<ContactFormValues>({
         resolver: zodResolver(contactSchema),
         defaultValues: {
@@ -69,9 +70,12 @@ export function ContactForm({ initialData, onSubmit, isLoading }: ContactFormPro
     };
 
     return (
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 bg-white dark:bg-card p-6 rounded-lg shadow-sm border">
+        <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className={isNested ? "space-y-6" : "space-y-6 bg-white dark:bg-card p-6 rounded-lg shadow-sm border"}
+        >
             <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold">Contact Details</h2>
+                <h2 className="text-xl font-bold">{isNested ? '' : 'Contact Details'}</h2>
                 <Button type="submit" disabled={isLoading}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Save Changes

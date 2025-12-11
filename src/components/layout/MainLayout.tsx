@@ -15,7 +15,8 @@ export function MainLayout() {
 
                 {/* Main Content Area - Rounded left corners, with top/bottom padding */}
                 <div className="flex-1 flex flex-col h-full relative pt-2 pb-4 pr-0 pl-0">
-                    <main className="flex-1 flex flex-col bg-background rounded-l-2xl overflow-hidden relative">
+                    <main className="flex-1 flex flex-col bg-background rounded-l-[32px] overflow-hidden relative">
+                        <div id="database-drawer-container" className="absolute inset-0 z-50 pointer-events-none" />
                         <div className="flex-1 overflow-auto p-4 md:p-8">
                             <Outlet />
                         </div>

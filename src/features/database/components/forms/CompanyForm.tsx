@@ -23,9 +23,10 @@ interface CompanyFormProps {
     initialData?: Company;
     onSubmit: (data: CompanyFormValues) => Promise<void>;
     isLoading?: boolean;
+    isNested?: boolean;
 }
 
-export function CompanyForm({ initialData, onSubmit, isLoading }: CompanyFormProps) {
+export function CompanyForm({ initialData, onSubmit, isLoading, isNested = false }: CompanyFormProps) {
     const form = useForm<CompanyFormValues>({
         resolver: zodResolver(companySchema),
         defaultValues: {
@@ -48,9 +49,12 @@ export function CompanyForm({ initialData, onSubmit, isLoading }: CompanyFormPro
     }, [initialData, form]);
 
     return (
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 bg-white dark:bg-card p-6 rounded-lg shadow-sm border">
+        <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className={isNested ? "space-y-6" : "space-y-6 bg-white dark:bg-card p-6 rounded-lg shadow-sm border"}
+        >
             <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold">Company Details</h2>
+                <h2 className="text-xl font-bold">{isNested ? '' : 'Company Details'}</h2>
                 <Button type="submit" disabled={isLoading}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Save Changes

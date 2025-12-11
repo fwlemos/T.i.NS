@@ -26,6 +26,7 @@ interface RelationalFieldProps {
         onSubmit: (data: any) => Promise<void>;
         isLoading?: boolean;
         initialData?: any;
+        isNested?: boolean;
     }>;
     onNestedCreate: (data: any) => Promise<string>; // Must return the new ID
     placeholder?: string;
@@ -183,10 +184,14 @@ export function RelationalField({
                     </Button>
                 </div>
             ) : (
-                <div className="border rounded-md p-4 bg-gray-50 dark:bg-gray-900/50 relative animate-in fade-in slide-in-from-top-2">
-                    <div className="flex justify-between items-center mb-4">
-                        <h4 className="font-semibold text-sm">New {entityType}</h4>
-                        <Button variant="ghost" size="sm" onClick={() => setIsCreating(false)} type="button">
+                <div className="animate-in fade-in slide-in-from-top-2 border-l-2 border-primary/20 pl-4 py-2">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="flex items-center gap-2">
+                            <h4 className="font-medium text-base text-foreground">
+                                New {entityType.charAt(0).toUpperCase() + entityType.slice(1)}
+                            </h4>
+                        </div>
+                        <Button variant="ghost" size="sm" onClick={() => setIsCreating(false)} type="button" className="h-8 w-8 p-0">
                             <X className="h-4 w-4" />
                         </Button>
                     </div>
@@ -194,6 +199,7 @@ export function RelationalField({
                     <FormComponent
                         onSubmit={handleNestedSubmit}
                         isLoading={isLoading}
+                        isNested={true}
                     />
                 </div>
             )}

@@ -10,6 +10,15 @@ import { supabase } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { BulkEditDialog } from '../components/bulk/BulkEditDialog';
 
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetDescription,
+} from '@/components/ui/Sheet';
+import { CompanyForm } from '../components/forms/CompanyForm';
+
 type Company = Database['public']['Tables']['companies']['Row'] & {
     contacts: [{ count: number }]; // Count of related contacts
 };
@@ -19,6 +28,7 @@ export function CompaniesView() {
     const [searchTerm, setSearchTerm] = useState('');
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
     const [isBulkEditOpen, setIsBulkEditOpen] = useState(false);
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
 
     const {
         data,
@@ -133,12 +143,49 @@ export function CompaniesView() {
         }
     };
 
+    const handleCreateSubmit = async (data: any) => {
+        try {
+            const { data: newCompany, error } = await supabase
+                .from('companies')
+                .insert({
+                    ...data,
+                    type: 'company',
+                    created_by: (await supabase.auth.getUser()).data.user?.id
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+            setIsCreateOpen(false);
+            navigate(`/database/companies/${newCompany.id}`);
+        } catch (err) {
+            console.error('Error creating company:', err);
+            toast.error('Failed to create company');
+        }
+    };
+
     return (
         <ViewContainer
             title="Companies"
             description="Manage your client companies."
-            onCreate={() => console.log('Create Company')}
+            onCreate={() => setIsCreateOpen(true)}
         >
+            <Sheet open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <SheetContent
+                    className="overflow-y-auto"
+                    container={document.getElementById('database-drawer-container')}
+                >
+                    <SheetHeader>
+                        <SheetTitle>Create New Company</SheetTitle>
+                        <SheetDescription>
+                            Add a new client company. Click save when you're done.
+                        </SheetDescription>
+                    </SheetHeader>
+                    <div className="mt-6">
+                        <CompanyForm onSubmit={handleCreateSubmit} isLoading={false} />
+                    </div>
+                </SheetContent>
+            </Sheet>
             <div className="mb-4 relative max-w-sm">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input

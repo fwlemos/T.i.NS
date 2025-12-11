@@ -25,9 +25,10 @@ interface ProductFormProps {
     initialData?: Product;
     onSubmit: (data: ProductFormValues) => Promise<void>;
     isLoading?: boolean;
+    isNested?: boolean;
 }
 
-export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormProps) {
+export function ProductForm({ initialData, onSubmit, isLoading, isNested = false }: ProductFormProps) {
     const form = useForm<ProductFormValues>({
         resolver: zodResolver(productSchema),
         defaultValues: {
@@ -66,9 +67,12 @@ export function ProductForm({ initialData, onSubmit, isLoading }: ProductFormPro
     };
 
     return (
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 bg-white dark:bg-card p-6 rounded-lg shadow-sm border">
+        <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className={isNested ? "space-y-6" : "space-y-6 bg-white dark:bg-card p-6 rounded-lg shadow-sm border"}
+        >
             <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold">Product Details</h2>
+                <h2 className="text-xl font-bold">{isNested ? '' : 'Product Details'}</h2>
                 <Button type="submit" disabled={isLoading}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Save Changes
