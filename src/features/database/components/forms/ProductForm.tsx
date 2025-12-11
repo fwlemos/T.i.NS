@@ -16,6 +16,8 @@ const productSchema = z.object({
     part_number: z.string().optional().or(z.literal('')),
     manufacturer_id: z.string().min(1, 'Manufacturer is required'),
     default_warranty_years: z.number().optional(),
+    description: z.string().optional().or(z.literal('')),
+    notes: z.string().optional().or(z.literal('')),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -36,6 +38,8 @@ export function ProductForm({ initialData, onSubmit, isLoading, isNested = false
             part_number: '',
             manufacturer_id: '',
             default_warranty_years: 1,
+            description: '',
+            notes: '',
         },
     });
 
@@ -46,6 +50,8 @@ export function ProductForm({ initialData, onSubmit, isLoading, isNested = false
                 part_number: initialData.part_number || '',
                 manufacturer_id: initialData.manufacturer_id || '',
                 default_warranty_years: initialData.default_warranty_years || 1,
+                description: initialData.description || '',
+                notes: initialData.notes || '',
             });
         }
     }, [initialData, form]);
@@ -66,19 +72,8 @@ export function ProductForm({ initialData, onSubmit, isLoading, isNested = false
         return newManufacturer.id;
     };
 
-    return (
-        <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className={isNested ? "space-y-6" : "space-y-6 bg-white dark:bg-card p-6 rounded-lg shadow-sm border"}
-        >
-            <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold">{isNested ? '' : 'Product Details'}</h2>
-                <Button type="submit" disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Save Changes
-                </Button>
-            </div>
-
+    const renderFields = () => {
+        return (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="name">Product Name</Label>
@@ -122,7 +117,65 @@ export function ProductForm({ initialData, onSubmit, isLoading, isNested = false
                         {...form.register('default_warranty_years', { valueAsNumber: true })}
                     />
                 </div>
+
+                <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="description">Description</Label>
+                    <textarea
+                        id="description"
+                        {...form.register('description')}
+                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        placeholder="Product description..."
+                    />
+                </div>
+
+                <div className="space-y-2 md:col-span-2">
+                    <Label htmlFor="notes">Notes</Label>
+                    <textarea
+                        id="notes"
+                        {...form.register('notes')}
+                        className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        placeholder="Internal notes..."
+                    />
+                </div>
             </div>
-        </form>
+        );
+    };
+
+    return (
+        <div className={isNested ? "space-y-6" : "space-y-6 bg-white dark:bg-card p-6 rounded-lg shadow-sm border"}>
+            {isNested ? (
+                <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-xl font-bold">{initialData ? 'Edit Product' : 'New Product'}</h2>
+                    </div>
+                    {renderFields()}
+                    <div className="pt-4 mt-6 border-t">
+                        <Button
+                            type="button"
+                            onClick={form.handleSubmit(onSubmit)}
+                            disabled={isLoading}
+                            className="w-full"
+                            size="lg"
+                        >
+                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Save Product
+                        </Button>
+                    </div>
+                </div>
+            ) : (
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-xl font-bold">{initialData ? 'Edit Product' : 'New Product'}</h2>
+                    </div>
+                    {renderFields()}
+                    <div className="pt-4 mt-6 border-t">
+                        <Button type="submit" disabled={isLoading} className="w-full" size="lg">
+                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Save Product
+                        </Button>
+                    </div>
+                </form>
+            )}
+        </div>
     );
 }

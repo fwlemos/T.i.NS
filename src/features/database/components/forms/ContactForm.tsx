@@ -18,6 +18,13 @@ const contactSchema = z.object({
     phone: z.string().optional().or(z.literal('')),
     job_title: z.string().optional().or(z.literal('')),
     company_id: z.string().optional().or(z.literal('')),
+    is_individual: z.boolean().optional(),
+    street: z.string().optional().or(z.literal('')),
+    city: z.string().optional().or(z.literal('')),
+    state_province: z.string().optional().or(z.literal('')),
+    postal_code: z.string().optional().or(z.literal('')),
+    country: z.string().optional().or(z.literal('')),
+    notes: z.string().optional().or(z.literal('')),
 });
 
 type ContactFormValues = z.infer<typeof contactSchema>;
@@ -39,8 +46,17 @@ export function ContactForm({ initialData, onSubmit, isLoading, isNested = false
             phone: '',
             job_title: '',
             company_id: '',
+            is_individual: false,
+            street: '',
+            city: '',
+            state_province: '',
+            postal_code: '',
+            country: '',
+            notes: '',
         },
     });
+
+    const isIndividual = form.watch('is_individual');
 
     useEffect(() => {
         if (initialData) {
@@ -50,6 +66,13 @@ export function ContactForm({ initialData, onSubmit, isLoading, isNested = false
                 phone: initialData.phone || '',
                 job_title: initialData.job_title || '',
                 company_id: initialData.company_id || '',
+                is_individual: initialData.is_individual || false,
+                street: initialData.street || '',
+                city: initialData.city || '',
+                state_province: initialData.state_province || '',
+                postal_code: initialData.postal_code || '',
+                country: initialData.country || '',
+                notes: initialData.notes || '',
             });
         }
     }, [initialData, form]);
@@ -70,19 +93,47 @@ export function ContactForm({ initialData, onSubmit, isLoading, isNested = false
     };
 
     return (
-        <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className={isNested ? "space-y-6" : "space-y-6 bg-white dark:bg-card p-6 rounded-lg shadow-sm border"}
-        >
-            <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold">{isNested ? '' : 'Contact Details'}</h2>
-                <Button type="submit" disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Save Changes
-                </Button>
-            </div>
+        <div className={isNested ? "space-y-6" : "space-y-6 bg-white dark:bg-card p-6 rounded-lg shadow-sm border"}>
+            {isNested ? (
+                <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-xl font-bold">{initialData ? 'Edit Contact' : 'New Contact'}</h2>
+                    </div>
+                    {renderFields()}
+                    <div className="pt-4 mt-6 border-t">
+                        <Button
+                            type="button"
+                            onClick={form.handleSubmit(onSubmit)}
+                            disabled={isLoading}
+                            className="w-full"
+                            size="lg"
+                        >
+                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Save Contact
+                        </Button>
+                    </div>
+                </div>
+            ) : (
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-xl font-bold">{initialData ? 'Edit Contact' : 'New Contact'}</h2>
+                    </div>
+                    {renderFields()}
+                    <div className="pt-4 mt-6 border-t">
+                        <Button type="submit" disabled={isLoading} className="w-full" size="lg">
+                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Save Contact
+                        </Button>
+                    </div>
+                </form>
+            )}
+        </div>
+    );
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    function renderFields() {
+        return (
+            <div className="space-y-4">
+                {/* Basic Info */}
                 <div className="space-y-2">
                     <Label htmlFor="name">Name</Label>
                     <Input id="name" {...form.register('name')} placeholder="John Doe" />
@@ -97,24 +148,6 @@ export function ContactForm({ initialData, onSubmit, isLoading, isNested = false
                 </div>
 
                 <div className="space-y-2">
-                    <Controller
-                        control={form.control}
-                        name="company_id"
-                        render={({ field }) => (
-                            <RelationalField
-                                label="Company"
-                                entityType="company"
-                                value={field.value ?? ''}
-                                onChange={(val: string) => field.onChange(val)}
-                                formComponent={CompanyForm}
-                                onNestedCreate={handleCreateCompany}
-                                placeholder="Select Company..."
-                            />
-                        )}
-                    />
-                </div>
-
-                <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input id="email" {...form.register('email')} placeholder="john@example.com" />
                     {form.formState.errors.email && (
@@ -126,7 +159,76 @@ export function ContactForm({ initialData, onSubmit, isLoading, isNested = false
                     <Label htmlFor="phone">Phone</Label>
                     <Input id="phone" {...form.register('phone')} placeholder="+1 234 567 8900" />
                 </div>
+
+                {/* Individual Checkbox */}
+                <div className="flex items-center space-x-2 py-2">
+                    <input
+                        type="checkbox"
+                        id="is_individual"
+                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        {...form.register('is_individual')}
+                    />
+                    <Label htmlFor="is_individual" className="cursor-pointer">Is Individual (Direct Client)</Label>
+                </div>
+
+                {/* Conditional Company Selection */}
+                {!isIndividual && (
+                    <div className="space-y-2">
+                        <Controller
+                            control={form.control}
+                            name="company_id"
+                            render={({ field }) => (
+                                <RelationalField
+                                    label="Company"
+                                    entityType="company"
+                                    value={field.value ?? ''}
+                                    onChange={(val: string) => field.onChange(val)}
+                                    formComponent={CompanyForm}
+                                    onNestedCreate={handleCreateCompany}
+                                    placeholder="Select Company..."
+                                />
+                            )}
+                        />
+                    </div>
+                )}
+
+                {/* Conditional Address Fields */}
+                {isIndividual && (
+                    <div className="space-y-4 border rounded-md p-4 bg-muted/20">
+                        <h3 className="font-medium text-sm">Address</h3>
+                        <div className="space-y-2">
+                            <Label htmlFor="street">Street</Label>
+                            <Input id="street" {...form.register('street')} placeholder="123 Main St" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="city">City</Label>
+                                <Input id="city" {...form.register('city')} placeholder="New York" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="state_province">State/Province</Label>
+                                <Input id="state_province" {...form.register('state_province')} placeholder="NY" />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="postal_code">Postal Code</Label>
+                                <Input id="postal_code" {...form.register('postal_code')} placeholder="10001" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="country">Country</Label>
+                                <Input id="country" {...form.register('country')} placeholder="USA" />
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Notes */}
+                <div className="space-y-2">
+                    <Label htmlFor="notes">Notes</Label>
+                    <Input id="notes" {...form.register('notes')} placeholder="Additional notes..." />
+                </div>
             </div>
-        </form>
-    );
+        );
+    }
 }
