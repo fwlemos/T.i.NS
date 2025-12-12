@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, ChevronsUpDown, Plus, X } from "lucide-react";
+import { Check, ChevronsUpDown, Plus, X, Building2, Factory, Package, User } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { Button } from "@/components/ui/Button";
 import {
@@ -206,7 +206,10 @@ export function MultiRelationalField({
                         <div key={item.id} className="rounded-lg border bg-card text-card-foreground shadow-sm p-3 flex items-center justify-between animate-in fade-in">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-primary/10 rounded-full">
-                                    <div className="h-4 w-4 bg-primary rounded-full opacity-20" />
+                                    {entityType === 'contact' && <User className="h-4 w-4 text-primary" />}
+                                    {entityType === 'company' && <Building2 className="h-4 w-4 text-primary" />}
+                                    {entityType === 'manufacturer' && <Factory className="h-4 w-4 text-primary" />}
+                                    {entityType === 'product' && <Package className="h-4 w-4 text-primary" />}
                                 </div>
                                 <div>
                                     <h4 className="font-semibold text-sm">{item.name}</h4>

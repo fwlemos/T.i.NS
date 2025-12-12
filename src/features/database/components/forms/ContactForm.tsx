@@ -25,6 +25,14 @@ const contactSchema = z.object({
     postal_code: z.string().optional().or(z.literal('')),
     country: z.string().optional().or(z.literal('')),
     notes: z.string().optional().or(z.literal('')),
+}).superRefine((data, ctx) => {
+    if (!data.is_individual && (!data.company_id || data.company_id === '')) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Company is required for non-individuals",
+            path: ["company_id"],
+        });
+    }
 });
 
 type ContactFormValues = z.infer<typeof contactSchema>;
@@ -205,6 +213,8 @@ export function ContactForm({ initialData, onSubmit, isLoading, isNested = false
                                     onNestedCreate={handleCreateCompany}
                                     placeholder="Select Company..."
                                     disabled={readOnly}
+                                    required={!isIndividual}
+                                    error={form.formState.errors.company_id?.message}
                                 />
                             )}
                         />

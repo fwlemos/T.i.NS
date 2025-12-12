@@ -16,21 +16,23 @@ import { MultiRelationalField } from '@/features/database/components/forms/Multi
 import { ProductForm } from '@/features/database/components/forms/ProductForm';
 
 const formSchema = z.object({
-    title: z.string().min(1, 'Title is required'),
+    title: z.string().optional(),
     contact_id: z.string().min(1, 'Contact is required'),
     company_id: z.string().optional(), // Auto-filled from contact usually
     lead_origin_id: z.string().min(1, 'Lead Origin is required'),
-    office: z.enum(['TIA', 'TIC']),
     notes: z.string().optional(),
     product_ids: z.array(z.string()).min(1, 'Select at least one product'),
 });
 
 type FormData = z.infer<typeof formSchema>;
 
+// Input type for the submit handler - title is required there
+type SubmitData = Omit<FormData, 'title'> & { title: string };
+
 interface NewOpportunityDrawerProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onSubmit: (data: FormData) => Promise<void>;
+    onSubmit: (data: SubmitData) => Promise<void>;
     isLoading?: boolean;
     // Options
     leadOrigins?: { id: string; name: string }[];
@@ -46,13 +48,48 @@ export function NewOpportunityDrawer({
     const { register, handleSubmit, formState: { errors }, setValue, control } = useForm<FormData>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            office: 'TIA',
             product_ids: [],
         },
     });
 
     const handleFormSubmit = async (data: FormData) => {
-        await onSubmit(data);
+        let title = data.title;
+
+        if (!title || title.trim() === '') {
+            // Auto-generate title: "Contact Name - Product Name"
+            try {
+                const { data: contact } = await supabase
+                    .from('contacts')
+                    .select('name')
+                    .eq('id', data.contact_id)
+                    .single();
+
+                // Fetch first product name
+                let productName = '';
+                if (data.product_ids && data.product_ids.length > 0) {
+                    const { data: product } = await supabase
+                        .from('products')
+                        .select('name')
+                        .eq('id', data.product_ids[0])
+                        .single();
+                    if (product) productName = product.name;
+                }
+
+                if (contact) {
+                    title = `${contact.name}`;
+                    if (productName) {
+                        title += ` - ${productName}`;
+                    }
+                } else {
+                    title = 'New Opportunity';
+                }
+            } catch (err) {
+                console.error('Error generating title:', err);
+                title = 'New Opportunity';
+            }
+        }
+
+        await onSubmit({ ...data, title: title || 'New Opportunity' } as SubmitData);
         onOpenChange(false);
     };
 
@@ -87,7 +124,10 @@ export function NewOpportunityDrawer({
         >
             <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
                 <div className="space-y-2">
-                    <Label htmlFor="title" className="text-white">Opportunity Title <span className="text-red-400">*</span></Label>
+                    <Label htmlFor="title" className="text-white">
+                        Opportunity Title
+                        <span className="text-gray-400 text-xs ml-2 font-normal">(Optional - auto-generated if empty)</span>
+                    </Label>
                     <Input
                         id="title"
                         {...register('title')}
@@ -97,34 +137,19 @@ export function NewOpportunityDrawer({
                     {errors.title && <span className="text-xs text-red-400">{errors.title.message}</span>}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label className="text-white">Lead Origin <span className="text-red-400">*</span></Label>
-                        <Select onValueChange={(val) => setValue('lead_origin_id', val)}>
-                            <SelectTrigger className="bg-[#2A2A2A] border-white/10 text-white">
-                                <SelectValue placeholder="Select origin" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-[#1B1B1B] border-white/10 text-white">
-                                {leadOrigins.map(origin => (
-                                    <SelectItem key={origin.id} value={origin.id}>{origin.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        {errors.lead_origin_id && <span className="text-xs text-red-400">{errors.lead_origin_id.message}</span>}
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label className="text-white">Office <span className="text-red-400">*</span></Label>
-                        <Select onValueChange={(val: 'TIA' | 'TIC') => setValue('office', val)} defaultValue="TIA">
-                            <SelectTrigger className="bg-[#2A2A2A] border-white/10 text-white">
-                                <SelectValue placeholder="Select office" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-[#1B1B1B] border-white/10 text-white">
-                                <SelectItem value="TIA">TIA</SelectItem>
-                                <SelectItem value="TIC">TIC</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+                <div className="space-y-2">
+                    <Label className="text-white">Lead Origin <span className="text-red-400">*</span></Label>
+                    <Select onValueChange={(val) => setValue('lead_origin_id', val)}>
+                        <SelectTrigger className="bg-[#2A2A2A] border-white/10 text-white">
+                            <SelectValue placeholder="Select origin" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#1B1B1B] border-white/10 text-white">
+                            {leadOrigins.map(origin => (
+                                <SelectItem key={origin.id} value={origin.id}>{origin.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    {errors.lead_origin_id && <span className="text-xs text-red-400">{errors.lead_origin_id.message}</span>}
                 </div>
 
                 <div className="space-y-2">

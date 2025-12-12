@@ -28,7 +28,6 @@ export function CRMPage() {
         title: string;
         contact_id: string;
         lead_origin_id: string;
-        office: 'TIA' | 'TIC';
         notes?: string;
         product_ids: string[];
     }) => {

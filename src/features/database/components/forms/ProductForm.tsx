@@ -18,7 +18,7 @@ const productSchema = z.object({
     manufacturer_id: z.string().min(1, 'Manufacturer is required'),
     default_warranty_years: z.number().optional(),
     description: z.string().optional().or(z.literal('')),
-    notes: z.string().optional().or(z.literal('')),
+    ncm: z.string().optional().or(z.literal('')),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -42,7 +42,7 @@ export function ProductForm({ initialData, onSubmit, isLoading, isNested = false
             manufacturer_id: '',
             default_warranty_years: 1,
             description: '',
-            notes: '',
+            ncm: '',
         },
     });
 
@@ -54,7 +54,7 @@ export function ProductForm({ initialData, onSubmit, isLoading, isNested = false
                 manufacturer_id: initialData.manufacturer_id || '',
                 default_warranty_years: initialData.default_warranty_years || 1,
                 description: initialData.description || '',
-                notes: initialData.notes || '',
+                ncm: (initialData as any).ncm || '',
             });
         }
     }, [initialData, form]);
@@ -79,7 +79,7 @@ export function ProductForm({ initialData, onSubmit, isLoading, isNested = false
         return (
             <div className="flex flex-col gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="name">Product Name</Label>
+                    <Label htmlFor="name">Product Name <span className="text-red-500">*</span></Label>
                     <Input id="name" {...form.register('name')} placeholder="Super Widget" disabled={readOnly} error={!!form.formState.errors.name} />
                     {form.formState.errors.name && (
                         <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
@@ -92,14 +92,19 @@ export function ProductForm({ initialData, onSubmit, isLoading, isNested = false
                         <Input id="part_number" {...form.register('part_number')} placeholder="PN-123456" disabled={readOnly} />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="default_warranty_years">Warranty (Years)</Label>
-                        <Input
-                            type="number"
-                            id="default_warranty_years"
-                            disabled={readOnly}
-                            {...form.register('default_warranty_years', { valueAsNumber: true })}
-                        />
+                        <Label htmlFor="ncm">NCM</Label>
+                        <Input id="ncm" {...form.register('ncm')} placeholder="NCM code..." disabled={readOnly} />
                     </div>
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="default_warranty_years">Warranty (Years)</Label>
+                    <Input
+                        type="number"
+                        id="default_warranty_years"
+                        disabled={readOnly}
+                        {...form.register('default_warranty_years', { valueAsNumber: true })}
+                    />
                 </div>
 
                 <div className="space-y-2">
@@ -116,12 +121,11 @@ export function ProductForm({ initialData, onSubmit, isLoading, isNested = false
                                 onNestedCreate={handleCreateManufacturer}
                                 placeholder="Select Manufacturer..."
                                 disabled={readOnly}
+                                required={true}
+                                error={form.formState.errors.manufacturer_id?.message}
                             />
                         )}
                     />
-                    {form.formState.errors.manufacturer_id && (
-                        <p className="text-sm text-red-500">{form.formState.errors.manufacturer_id.message}</p>
-                    )}
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
@@ -130,16 +134,6 @@ export function ProductForm({ initialData, onSubmit, isLoading, isNested = false
                         id="description"
                         {...form.register('description')}
                         placeholder="Product description..."
-                        disabled={readOnly}
-                    />
-                </div>
-
-                <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="notes">Notes</Label>
-                    <Textarea
-                        id="notes"
-                        {...form.register('notes')}
-                        placeholder="Internal notes..."
                         disabled={readOnly}
                     />
                 </div>

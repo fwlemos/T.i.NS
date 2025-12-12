@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, ChevronsUpDown, Plus, X } from "lucide-react";
+import { Check, ChevronsUpDown, Plus, X, Building2, Factory, Package, User } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { Button } from "@/components/ui/Button";
 import {
@@ -33,6 +33,8 @@ interface RelationalFieldProps {
     placeholder?: string;
     className?: string;
     disabled?: boolean;
+    required?: boolean;
+    error?: string;
 }
 
 export function RelationalField({
@@ -45,6 +47,8 @@ export function RelationalField({
     placeholder = "Select...",
     className,
     disabled = false,
+    required = false,
+    error,
 }: RelationalFieldProps) {
     const [open, setOpen] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
@@ -66,7 +70,7 @@ export function RelationalField({
                 // Construct query based on entity type to get address info
                 let selectQuery = "id, name";
                 if (entityType === 'contact') {
-                    selectQuery += ", city, state_province, country";
+                    selectQuery += ", city, state_province, country, is_individual, company:companies(name)";
                 } else if (entityType === 'product') {
                     selectQuery += ", part_number";
                 } else {
@@ -214,7 +218,7 @@ export function RelationalField({
 
                 let selectQuery = "id, name";
                 if (entityType === 'contact') {
-                    selectQuery += ", city, state_province, country";
+                    selectQuery += ", city, state_province, country, is_individual, company:companies(name)";
                 } else if (entityType === 'product') {
                     selectQuery += ", part_number";
                 } else {
@@ -286,36 +290,50 @@ export function RelationalField({
         return parts.join(", ");
     };
 
-    const renderCard = () => (
-        <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-4 flex items-center justify-between animate-in fade-in">
-            <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-full">
-                    {/* Icon placeholder */}
-                    <div className="h-5 w-5 bg-primary rounded-full opacity-20" />
+    const renderCard = () => {
+        const isContact = entityType === 'contact';
+
+        return (
+            <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-4 flex items-center justify-between animate-in fade-in">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-full">
+                        {entityType === 'contact' && <User className="h-5 w-5 text-primary" />}
+                        {entityType === 'company' && <Building2 className="h-5 w-5 text-primary" />}
+                        {entityType === 'manufacturer' && <Factory className="h-5 w-5 text-primary" />}
+                        {entityType === 'product' && <Package className="h-5 w-5 text-primary" />}
+                    </div>
+                    <div>
+                        <h4 className="font-semibold text-sm">{selectedItemDetails?.name}</h4>
+                        <p className="text-xs text-muted-foreground">
+                            {isContact ? (
+                                selectedItemDetails?.is_individual
+                                    ? "Individual"
+                                    : (selectedItemDetails?.company?.name || "No Company")
+                            ) : (
+                                getLocationString(selectedItemDetails)
+                            )}
+                        </p>
+                    </div>
                 </div>
-                <div>
-                    <h4 className="font-semibold text-sm">{selectedItemDetails?.name}</h4>
-                    <p className="text-xs text-muted-foreground">{getLocationString(selectedItemDetails)}</p>
-                </div>
+                {!disabled && (
+                    <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={handleEdit} type="button">
+                            {/* Edit Icon */}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={handleRemove} type="button">
+                            <X className="h-4 w-4" />
+                        </Button>
+                    </div>
+                )}
             </div>
-            {!disabled && (
-                <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={handleEdit} type="button">
-                        {/* Edit Icon */}
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={handleRemove} type="button">
-                        <X className="h-4 w-4" />
-                    </Button>
-                </div>
-            )}
-        </div>
-    );
+        );
+    };
 
     return (
         <div className={cn("space-y-2", className)}>
             <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                {label}
+                {label} {required && <span className="text-red-500">*</span>}
             </label>
 
             {selectedItemDetails && !isCreating && !open ? (
@@ -332,7 +350,8 @@ export function RelationalField({
                                 className={cn(
                                     "w-full justify-between font-normal text-left",
                                     !selectedItemName && "text-muted-foreground",
-                                    disabled && "opacity-50 cursor-not-allowed"
+                                    disabled && "opacity-50 cursor-not-allowed",
+                                    error && "border-red-500"
                                 )}
                             >
                                 {selectedItemName || placeholder}
@@ -430,6 +449,7 @@ export function RelationalField({
                     </div>
                 )
             )}
+            {error && <p className="text-xs text-red-500">{error}</p>}
         </div>
     );
 }

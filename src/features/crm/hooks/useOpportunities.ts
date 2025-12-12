@@ -50,7 +50,6 @@ export function useOpportunities() {
             contact_id: string;
             stage_id: string;
             lead_origin_id: string;
-            office: 'TIA' | 'TIC';
             notes?: string;
             product_ids: string[];
         }) => {
@@ -59,7 +58,7 @@ export function useOpportunities() {
             // 1. Create Opportunity
             const { data: opp, error: oppError } = await supabase
                 .from('opportunities')
-                .insert([{ ...oppData }])
+                .insert([{ ...oppData, office: 'TIA' }])
                 .select()
                 .single();
 
