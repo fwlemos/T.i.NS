@@ -6,7 +6,7 @@ export type Company = Database['public']['Tables']['companies']['Row'];
 export type PipelineStage = Database['public']['Tables']['pipeline_stages']['Row'];
 
 export interface OpportunityWithRelations extends Opportunity {
-    contact: Contact | null;
+    contact: (Contact & { company: Company | null }) | null;
     company: Company | null;
     stage: PipelineStage | null;
     owner_profile: {
@@ -15,7 +15,7 @@ export interface OpportunityWithRelations extends Opportunity {
     } | null;
     products?: {
         id: string;
-        product: { name: string; manufacturer_id: string } | null;
+        product: { id: string; name: string; manufacturer_id: string; manufacturer?: { name: string; country?: string } } | null;
         quantity: number;
     }[];
     // We might calculate these or fetch them
@@ -23,6 +23,7 @@ export interface OpportunityWithRelations extends Opportunity {
     total_net_value?: number;
     total_sales_value?: number;
     currency?: string;
+    stage_changed_at?: string;
 }
 
 export type CRMViewType = 'kanban' | 'list';

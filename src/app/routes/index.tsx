@@ -50,7 +50,7 @@ const router = createBrowserRouter([
                         children: [
                             { index: true, element: <CRMPage /> },
                             { path: 'settings', element: <CRMSettingsPage /> },
-                            { path: 'opportunities/:id', element: <OpportunityDetail /> },
+                            { path: 'opportunity/:id', element: <OpportunityDetail /> },
                         ]
                     },
                     { path: 'orders', element: <div className="p-4">Orders Module Placeholder</div> },

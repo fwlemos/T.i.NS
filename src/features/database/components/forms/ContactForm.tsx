@@ -103,6 +103,23 @@ export function ContactForm({ initialData, onSubmit, isLoading, isNested = false
         return newCompany.id;
     };
 
+    const handleFormSubmit = async (data: ContactFormValues) => {
+        const sanitizedData = {
+            ...data,
+            company_id: (data.is_individual || data.company_id === '') ? null : data.company_id,
+            email: data.email === '' ? null : data.email,
+            phone: data.phone === '' ? null : data.phone,
+            job_title: data.job_title === '' ? null : data.job_title,
+            street: data.street === '' ? null : data.street,
+            city: data.city === '' ? null : data.city,
+            state_province: data.state_province === '' ? null : data.state_province,
+            postal_code: data.postal_code === '' ? null : data.postal_code,
+            country: data.country === '' ? null : data.country,
+            notes: data.notes === '' ? null : data.notes,
+        };
+        await onSubmit(sanitizedData as any);
+    };
+
     return (
         <div className={isNested ? "space-y-6" : "space-y-6 bg-white dark:bg-card p-6 rounded-lg shadow-sm border"}>
             {isNested ? (
@@ -125,7 +142,7 @@ export function ContactForm({ initialData, onSubmit, isLoading, isNested = false
                         <div className="pt-4 mt-6 border-t">
                             <Button
                                 type="button"
-                                onClick={form.handleSubmit(onSubmit, (errors) => console.error("Nested Form Validation Errors:", errors))}
+                                onClick={form.handleSubmit(handleFormSubmit, (errors) => console.error("Nested Form Validation Errors:", errors))}
                                 disabled={isLoading}
                                 className="w-full"
                                 size="lg"
@@ -137,7 +154,7 @@ export function ContactForm({ initialData, onSubmit, isLoading, isNested = false
                     )}
                 </div>
             ) : (
-                <form onSubmit={form.handleSubmit(onSubmit, (errors) => console.error("Form Validation Errors:", errors))} className="space-y-6">
+                <form onSubmit={form.handleSubmit(handleFormSubmit, (errors) => console.error("Form Validation Errors:", errors))} className="space-y-6">
                     <div className="flex justify-between items-center">
                         <h2 className="text-xl font-bold">{initialData ? 'Edit Contact' : 'New Contact'}</h2>
                         <div className="flex items-center space-x-2">

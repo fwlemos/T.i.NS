@@ -102,10 +102,7 @@ export function KanbanBoard({ stages, opportunities, onStageChange, onCardClick 
 
             {/* Drag Overlay - rendered in portal for proper z-index */}
             {createPortal(
-                <DragOverlay dropAnimation={{
-                    duration: 200,
-                    easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
-                }}>
+                <DragOverlay dropAnimation={null}>
                     {activeOpportunity ? (
                         <div className="w-[300px] rotate-2 opacity-95 cursor-grabbing">
                             <KanbanCard opportunity={activeOpportunity} isDragOverlay />

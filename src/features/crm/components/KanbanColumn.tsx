@@ -21,7 +21,7 @@ export function KanbanColumn({ stage, opportunities, onCardClick }: KanbanColumn
     const currency = opportunities[0]?.currency || 'USD';
 
     return (
-        <div className="flex flex-col h-full w-[300px] shrink-0">
+        <div className="flex flex-col h-full w-[300px] shrink-0 rounded-xl bg-muted/50 p-3 border border-border/40">
             {/* Column Header - Minimal Design */}
             <div className="flex items-center justify-between mb-4 py-2">
                 <div className="flex items-center gap-2.5">

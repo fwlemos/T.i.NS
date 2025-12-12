@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Check, ChevronDown, ChevronUp, AlertCircle, Calendar } from 'lucide-react';
+import React, { useState } from 'react';
+import { Check, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 import { OpportunityWithRelations, PipelineStage } from '../types';
 import { useOpportunities } from '../hooks/useOpportunities';
@@ -8,29 +8,22 @@ import { Label } from '@/components/ui/Label';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
-import { Button } from '@/components/ui/Button';
+// import { Button } from '@/components/ui/Button';
 
 interface StageAccordionProps {
     opportunity: OpportunityWithRelations;
     stages: PipelineStage[];
 }
 
-export function StageAccordion({ opportunity, stages }: StageAccordionProps) {
+export function StageAccordion({ opportunity, stages, expandedStages, onToggle }: StageAccordionProps & { expandedStages: string[]; onToggle: (id: string) => void }) {
     const currentStageIdx = stages.findIndex(s => s.id === opportunity.stage_id);
-    const [expandedStage, setExpandedStage] = useState<string | null>(opportunity.stage_id || null);
-
-    useEffect(() => {
-        if (opportunity.stage_id) {
-            setExpandedStage(opportunity.stage_id);
-        }
-    }, [opportunity.stage_id]);
 
     return (
         <div className="space-y-4">
             {stages.map((stage, index) => {
                 const isActive = stage.id === opportunity.stage_id;
                 const isPast = currentStageIdx > index;
-                const isExpanded = expandedStage === stage.id;
+                const isExpanded = expandedStages.includes(stage.id);
 
                 return (
                     <div
@@ -45,7 +38,7 @@ export function StageAccordion({ opportunity, stages }: StageAccordionProps) {
                     >
                         <div
                             className="p-5 flex items-center justify-between cursor-pointer select-none"
-                            onClick={() => setExpandedStage(isExpanded ? null : stage.id)}
+                            onClick={() => onToggle(stage.id)}
                         >
                             <div className="flex items-center gap-4">
                                 <div className={cn(

@@ -27,7 +27,7 @@ export function useOpportunities() {
                 .from('opportunities')
                 .select(`
                     *,
-                    contact:contacts(*),
+                    contact:contacts(*, company:companies(*)),
                     company:companies(*),
                     stage:pipeline_stages(*)
                 `);
@@ -55,10 +55,13 @@ export function useOpportunities() {
         }) => {
             const { product_ids, ...oppData } = newOpp;
 
-            // 1. Create Opportunity
+            // 1. Get current user
+            const { data: { user } } = await supabase.auth.getUser();
+
+            // 2. Create Opportunity
             const { data: opp, error: oppError } = await supabase
                 .from('opportunities')
-                .insert([{ ...oppData, office: 'TIA' }])
+                .insert([{ ...oppData, office: 'TIA', owner_id: user?.id }])
                 .select()
                 .single();
 
@@ -88,12 +91,49 @@ export function useOpportunities() {
         mutationFn: async ({ id, stage_id }: { id: string; stage_id: string }) => {
             const { error } = await supabase
                 .from('opportunities')
-                .update({ stage_id })
+                .update({
+                    stage_id,
+                    stage_changed_at: new Date().toISOString()
+                })
                 .eq('id', id);
 
             if (error) throw error;
         },
-        onSuccess: () => {
+        onMutate: async ({ id, stage_id }) => {
+            // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+            await queryClient.cancelQueries({ queryKey: ['opportunities'] });
+
+            // Snapshot the previous value
+            const previousOpportunities = queryClient.getQueryData<OpportunityWithRelations[]>(['opportunities']);
+
+            // Optimistically update to the new value
+            queryClient.setQueryData<OpportunityWithRelations[]>(['opportunities'], (old) => {
+                if (!old) return [];
+                return old.map((opp) => {
+                    if (opp.id === id) {
+                        return {
+                            ...opp,
+                            stage_id,
+                            // Optimistically update timestamp too
+                            // Assuming we'll extend the type below, or ignore type error for now if strictly typed
+                            stage_changed_at: new Date().toISOString()
+                        } as any;
+                    }
+                    return opp;
+                });
+            });
+
+            // Return a context object with the snapshotted value
+            return { previousOpportunities };
+        },
+        onError: (_err, _newTodo, context) => {
+            // If the mutation fails, use the context returned from onMutate to roll back
+            if (context?.previousOpportunities) {
+                queryClient.setQueryData(['opportunities'], context.previousOpportunities);
+            }
+        },
+        onSettled: () => {
+            // Always refetch after error or success:
             queryClient.invalidateQueries({ queryKey: ['opportunities'] });
         },
     });
@@ -106,12 +146,13 @@ export function useOpportunities() {
                 .from('opportunities')
                 .select(`
                     *,
-                    contact:contacts(*),
+                    contact:contacts(*, company:companies(*)),
                     company:companies(*),
                     stage:pipeline_stages(*),
+                    owner_profile:profiles!owner_id(*),
                     products:opportunity_products(
                         *,
-                        product:products(*)
+                        product:products(*, manufacturer:companies(*))
                     )
                 `)
                 .eq('id', id)
