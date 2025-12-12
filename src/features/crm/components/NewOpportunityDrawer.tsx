@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -42,7 +42,7 @@ export function NewOpportunityDrawer({
     leadOrigins = [],
     products = []
 }: NewOpportunityDrawerProps) {
-    const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormData>({
+    const { register, handleSubmit, formState: { errors }, setValue } = useForm<FormData>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             office: 'TIA',
@@ -57,7 +57,11 @@ export function NewOpportunityDrawer({
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent side="right" className="w-[600px] overflow-y-auto bg-[#1B1B1B] text-white border-l border-white/10">
+            <SheetContent
+                side="right"
+                className="w-[600px] overflow-y-auto bg-[#1B1B1B] text-white border-l border-white/10"
+                container={document.getElementById('database-drawer-container')}
+            >
                 <SheetHeader className="mb-6">
                     <SheetTitle className="text-2xl font-bold text-white">New Opportunity</SheetTitle>
                     <SheetDescription className="text-gray-400">
