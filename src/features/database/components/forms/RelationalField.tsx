@@ -22,7 +22,7 @@ interface RelationalFieldProps {
     label: string;
     value?: string;
     onChange: (value: string) => void;
-    entityType: "company" | "manufacturer" | "contact";
+    entityType: "company" | "manufacturer" | "contact" | "product";
     formComponent: React.ComponentType<{
         onSubmit: (data: any) => Promise<void>;
         isLoading?: boolean;
@@ -59,12 +59,16 @@ export function RelationalField({
     useEffect(() => {
         async function fetchDetails() {
             if (value) {
-                const table = entityType === 'contact' ? 'contacts' : 'companies';
+                let table = 'companies';
+                if (entityType === 'contact') table = 'contacts';
+                if (entityType === 'product') table = 'products';
 
                 // Construct query based on entity type to get address info
                 let selectQuery = "id, name";
                 if (entityType === 'contact') {
                     selectQuery += ", city, state_province, country";
+                } else if (entityType === 'product') {
+                    selectQuery += ", part_number";
                 } else {
                     // companies/manufacturers have address json column
                     selectQuery += ", address";
@@ -108,6 +112,12 @@ export function RelationalField({
                     .eq("type", "manufacturer")
                     .ilike("name", `%${searchTerm}%`)
                     .limit(10);
+            } else if (entityType === "product") {
+                query = supabase
+                    .from("products")
+                    .select("id, name")
+                    .ilike("name", `%${searchTerm}%`)
+                    .limit(10);
             } else {
                 query = supabase
                     .from("contacts")
@@ -147,7 +157,10 @@ export function RelationalField({
 
             let resultId = "";
             if (isEditing && selectedItemDetails?.id) {
-                const table = entityType === 'contact' ? 'contacts' : 'companies';
+                let table = 'companies';
+                if (entityType === 'contact') table = 'contacts';
+                if (entityType === 'product') table = 'products';
+
                 // Remove 'type' from update data to prevent overwriting it with null/undefined if passed
                 const { type, ...updateData } = data;
                 console.log('DEBUG: Updating nested entity:', { table, originalData: data, updatePayload: updateData });
@@ -164,7 +177,8 @@ export function RelationalField({
                 const tableMap: Record<string, string> = {
                     'company': 'companies',
                     'manufacturer': 'manufacturers',
-                    'contact': 'contacts'
+                    'contact': 'contacts',
+                    'product': 'products'
                 };
                 const pluralTable = tableMap[entityType] || entityType + 's';
 
@@ -194,10 +208,19 @@ export function RelationalField({
             if (resultId) {
                 onChange(resultId);
                 // Refetch details to update card immediately
-                const table = entityType === 'contact' ? 'contacts' : 'companies';
+                let table = 'companies';
+                if (entityType === 'contact') table = 'contacts';
+                if (entityType === 'product') table = 'products';
+
                 let selectQuery = "id, name";
-                if (entityType === 'contact') selectQuery += ", city, state_province, country";
-                else selectQuery += ", address";
+                if (entityType === 'contact') {
+                    selectQuery += ", city, state_province, country";
+                } else if (entityType === 'product') {
+                    selectQuery += ", part_number";
+                } else {
+                    // companies/manufacturers have address json column
+                    selectQuery += ", address";
+                }
 
                 const { data: newData, error: fetchError } = await supabase.from(table).select(selectQuery).eq('id', resultId).single();
 
@@ -242,6 +265,10 @@ export function RelationalField({
     // Helper to format location
     const getLocationString = (details: any) => {
         if (!details) return "";
+        if (entityType === 'product') {
+            return details.part_number ? `Part: ${details.part_number}` : "";
+        }
+
         const parts = [];
         if (entityType === 'contact') {
             if (details.city) parts.push(details.city);

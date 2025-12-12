@@ -1,5 +1,5 @@
 
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { AppDrawer } from '@/components/ui/AppDrawer';
@@ -9,6 +9,11 @@ import { Label } from '@/components/ui/Label';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase/client';
+import { RelationalField } from '@/features/database/components/forms/RelationalField';
+import { ContactForm } from '@/features/database/components/forms/ContactForm';
+import { MultiRelationalField } from '@/features/database/components/forms/MultiRelationalField';
+import { ProductForm } from '@/features/database/components/forms/ProductForm';
 
 const formSchema = z.object({
     title: z.string().min(1, 'Title is required'),
@@ -28,9 +33,7 @@ interface NewOpportunityDrawerProps {
     onSubmit: (data: FormData) => Promise<void>;
     isLoading?: boolean;
     // Options
-    contacts?: { id: string; name: string }[];
     leadOrigins?: { id: string; name: string }[];
-    products?: { id: string; name: string }[];
 }
 
 export function NewOpportunityDrawer({
@@ -38,11 +41,9 @@ export function NewOpportunityDrawer({
     onOpenChange,
     onSubmit,
     isLoading,
-    contacts = [],
     leadOrigins = [],
-    products = []
 }: NewOpportunityDrawerProps) {
-    const { register, handleSubmit, formState: { errors }, setValue } = useForm<FormData>({
+    const { register, handleSubmit, formState: { errors }, setValue, control } = useForm<FormData>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             office: 'TIA',
@@ -53,6 +54,28 @@ export function NewOpportunityDrawer({
     const handleFormSubmit = async (data: FormData) => {
         await onSubmit(data);
         onOpenChange(false);
+    };
+
+    const handleCreateContact = async (data: any): Promise<string> => {
+        const { data: newContact, error } = await supabase
+            .from('contacts')
+            .insert({ ...data, updated_at: new Date().toISOString() })
+            .select('id')
+            .single();
+
+        if (error) throw error;
+        return newContact.id;
+    };
+
+    const handleCreateProduct = async (data: any): Promise<string> => {
+        const { data: newProduct, error } = await supabase
+            .from('products')
+            .insert({ ...data, updated_at: new Date().toISOString() })
+            .select('id')
+            .single();
+
+        if (error) throw error;
+        return newProduct.id;
     };
 
     return (
@@ -106,36 +129,43 @@ export function NewOpportunityDrawer({
 
                 <div className="space-y-2">
                     <Label className="text-white">Contact <span className="text-red-400">*</span></Label>
-                    <Select onValueChange={(val) => setValue('contact_id', val)}>
-                        <SelectTrigger className="bg-[#2A2A2A] border-white/10 text-white">
-                            <SelectValue placeholder="Select contact" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-[#1B1B1B] border-white/10 text-white">
-                            {contacts.map(contact => (
-                                <SelectItem key={contact.id} value={contact.id}>{contact.name}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <Controller
+                        control={control}
+                        name="contact_id"
+                        render={({ field }) => (
+                            <RelationalField
+                                label=""
+                                entityType="contact"
+                                value={field.value}
+                                onChange={field.onChange}
+                                formComponent={ContactForm}
+                                onNestedCreate={handleCreateContact}
+                                placeholder="Select or create contact..."
+                                className="text-white"
+                            />
+                        )}
+                    />
                     {errors.contact_id && <span className="text-xs text-red-400">{errors.contact_id.message}</span>}
                 </div>
 
                 <div className="space-y-2">
                     <Label className="text-white">Interested Products <span className="text-red-400">*</span></Label>
-                    <div className="p-3 rounded-md bg-[#2A2A2A] border border-white/10 max-h-[150px] overflow-y-auto space-y-2">
-                        {products.length === 0 ? (
-                            <p className="text-xs text-gray-500">No products available.</p>
-                        ) : products.map(product => (
-                            <label key={product.id} className="flex items-center gap-2 cursor-pointer hover:bg-white/5 p-1 rounded">
-                                <input
-                                    type="checkbox"
-                                    value={product.id}
-                                    {...register('product_ids')}
-                                    className="rounded border-white/20 bg-[#1B1B1B] text-emerald-500 focus:ring-emerald-500/50"
-                                />
-                                <span className="text-sm text-gray-300">{product.name}</span>
-                            </label>
-                        ))}
-                    </div>
+                    <Controller
+                        control={control}
+                        name="product_ids"
+                        render={({ field }) => (
+                            <MultiRelationalField
+                                label=""
+                                entityType="product"
+                                value={field.value}
+                                onChange={field.onChange}
+                                formComponent={ProductForm}
+                                onNestedCreate={handleCreateProduct}
+                                placeholder="Select products..."
+                                className="text-white"
+                            />
+                        )}
+                    />
                     {errors.product_ids && <span className="text-xs text-red-400">{errors.product_ids.message}</span>}
                 </div>
 

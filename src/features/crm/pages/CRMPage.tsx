@@ -14,7 +14,7 @@ export function CRMPage() {
     const navigate = useNavigate();
 
     const { opportunities, stages, isLoading, updateStage, createOpportunity } = useOpportunities();
-    const { contacts, leadOrigins, products } = useCRMOptions();
+    const { leadOrigins } = useCRMOptions();
 
     const handleCardClick = (id: string) => {
         navigate(`/crm/opportunity/${id}`);
@@ -85,9 +85,7 @@ export function CRMPage() {
                 onOpenChange={setIsDrawerOpen}
                 onSubmit={handleCreateOpportunity}
                 isLoading={createOpportunity.isPending}
-                contacts={contacts}
                 leadOrigins={leadOrigins}
-                products={products}
             />
         </div>
     );
