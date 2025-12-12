@@ -1,6 +1,6 @@
-import React from 'react';
+
 import { useDraggable } from '@dnd-kit/core';
-import { Calendar, Clock, Building2, User } from 'lucide-react';
+import { Building2, User, Clock } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar';
 import { cn } from '@/lib/utils/cn';
 import { OpportunityWithRelations } from '../types';
@@ -8,9 +8,10 @@ import { OpportunityWithRelations } from '../types';
 interface KanbanCardProps {
     opportunity: OpportunityWithRelations;
     onClick?: () => void;
+    isDragOverlay?: boolean;
 }
 
-export function KanbanCard({ opportunity, onClick }: KanbanCardProps) {
+export function KanbanCard({ opportunity, onClick, isDragOverlay = false }: KanbanCardProps) {
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
         id: opportunity.id,
         data: opportunity,
@@ -20,13 +21,24 @@ export function KanbanCard({ opportunity, onClick }: KanbanCardProps) {
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
     } : undefined;
 
-    const daysOpen = Math.floor((new Date().getTime() - new Date(opportunity.created_at).getTime()) / (1000 * 3600 * 24));
+    // Calculate days open
+    const daysOpen = Math.floor(
+        (new Date().getTime() - new Date(opportunity.created_at).getTime()) / (1000 * 3600 * 24)
+    );
 
-    // Fallback Mock values
+    // Get display values
     const salesValue = opportunity.total_sales_value || 0;
     const currency = opportunity.currency || 'USD';
-    const entityName = opportunity.company?.name || opportunity.contact?.name || 'Unknown Client';
+    const entityName = opportunity.company?.name || opportunity.contact?.name || 'Unknown';
     const isCompany = !!opportunity.company;
+    const ownerInitial = opportunity.owner_profile?.full_name?.charAt(0) || 'U';
+
+    // Format currency
+    const formattedValue = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency,
+        maximumFractionDigits: 0
+    }).format(salesValue);
 
     return (
         <div
@@ -34,53 +46,67 @@ export function KanbanCard({ opportunity, onClick }: KanbanCardProps) {
             style={style}
             {...listeners}
             {...attributes}
-            className="group outline-none"
+            className="outline-none"
         >
             <div
                 onClick={onClick}
                 className={cn(
-                    "relative bg-white p-4 rounded-xl border border-gray-200 shadow-sm transition-all duration-200",
-                    "hover:shadow-md hover:border-gray-300 cursor-grab active:cursor-grabbing",
-                    isDragging && "opacity-0" // We hide the original while dragging the overlay
+                    // Base styles
+                    "bg-white rounded-xl p-4",
+                    "border border-gray-100",
+                    "shadow-sm",
+                    "transition-all duration-200 ease-out",
+                    // Interactive states
+                    "hover:shadow-md hover:border-gray-200 hover:-translate-y-0.5",
+                    "cursor-grab active:cursor-grabbing",
+                    // Drag states
+                    isDragging && "opacity-0",
+                    isDragOverlay && "shadow-xl ring-2 ring-gray-900/5"
                 )}
             >
-                {/* Header: Title & Client */}
-                <div className="mb-3">
-                    <h4 className="font-semibold text-gray-900 leading-snug mb-1.5 group-hover:text-emerald-600 transition-colors">
-                        {opportunity.title}
-                    </h4>
-                    <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                        {isCompany ? <Building2 size={12} /> : <User size={12} />}
-                        <span className="truncate max-w-[200px]">{entityName}</span>
-                    </div>
+                {/* Title */}
+                <h4 className="font-medium text-gray-900 text-sm leading-snug mb-2 line-clamp-2">
+                    {opportunity.title}
+                </h4>
+
+                {/* Client info */}
+                <div className="flex items-center gap-1.5 mb-3">
+                    {isCompany ? (
+                        <Building2 size={12} className="text-gray-400 shrink-0" />
+                    ) : (
+                        <User size={12} className="text-gray-400 shrink-0" />
+                    )}
+                    <span className="text-xs text-gray-500 truncate">{entityName}</span>
                 </div>
 
-                {/* Value Divider */}
-                <div className="w-full h-px bg-gray-50 mb-3" />
-
-                {/* Footer: Value & Meta */}
-                <div className="flex items-center justify-between">
+                {/* Footer */}
+                <div className="flex items-center justify-between pt-3 border-t border-gray-50">
+                    {/* Value and days */}
                     <div>
-                        <p className="text-sm font-bold text-gray-900 tracking-tight">
-                            {new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 0 }).format(salesValue)}
+                        <p className="text-sm font-semibold text-gray-900 tracking-tight">
+                            {formattedValue}
                         </p>
-                        <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
-                            <div className="flex items-center gap-1">
-                                <Clock size={12} className={daysOpen > 30 ? "text-amber-500" : ""} />
-                                <span className={daysOpen > 30 ? "text-amber-600 font-medium" : ""}>{daysOpen} days</span>
-                            </div>
+                        <div className="flex items-center gap-1 mt-0.5">
+                            <Clock size={10} className={cn(
+                                "text-gray-300",
+                                daysOpen > 30 && "text-amber-400"
+                            )} />
+                            <span className={cn(
+                                "text-[10px] text-gray-400",
+                                daysOpen > 30 && "text-amber-500 font-medium"
+                            )}>
+                                {daysOpen}d
+                            </span>
                         </div>
                     </div>
 
-                    {/* Owner Avatar */}
-                    <div className="flex -space-x-2">
-                        <Avatar className="h-7 w-7 border-2 border-white ring-1 ring-gray-100">
-                            <AvatarImage src={opportunity.owner_profile?.avatar_url || undefined} />
-                            <AvatarFallback className="text-[10px] bg-gray-100 font-semibold text-gray-600">
-                                {opportunity.owner_profile?.full_name?.charAt(0) || 'U'}
-                            </AvatarFallback>
-                        </Avatar>
-                    </div>
+                    {/* Owner avatar */}
+                    <Avatar className="h-6 w-6 border border-gray-100">
+                        <AvatarImage src={opportunity.owner_profile?.avatar_url || undefined} />
+                        <AvatarFallback className="text-[10px] bg-gray-50 text-gray-600 font-medium">
+                            {ownerInitial}
+                        </AvatarFallback>
+                    </Avatar>
                 </div>
             </div>
         </div>

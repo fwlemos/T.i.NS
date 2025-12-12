@@ -1,0 +1,89 @@
+﻿src/features/crm/components/ActivityTimeline.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/crm/components/CRMHeader.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/crm/components/KanbanBoard.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/features/crm/components/KanbanCard.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/crm/components/KanbanColumn.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/crm/components/MarkLostDialog.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/features/crm/components/NewOpportunityDrawer.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/crm/components/NewOpportunityDrawer.tsx(45,70): error TS6133: 'watch' is declared but its value is never read.
+src/features/crm/components/OpportunityList.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/crm/components/OpportunityList.tsx(46,39): error TS2551: Property 'lead_origin' does not exist on type 'OpportunityWithRelations'. Did you mean 'lead_origin_id'?
+src/features/crm/components/RelatedEntitiesPanel.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/crm/components/RelatedEntitiesPanel.tsx(38,88): error TS2339: Property 'industry' does not exist on type '{ address: Json; contract_file_id: string | null; contract_validity: string | null; created_at: string; created_by: string | null; exclusivity_file_id: string | null; has_exclusivity: boolean | null; ... 8 more ...; website: string | null; }'.
+src/features/crm/components/StageAccordion.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/features/crm/components/StageAccordion.tsx(2,54): error TS6133: 'Calendar' is declared but its value is never read.
+src/features/crm/components/StageAccordion.tsx(11,1): error TS6133: 'Button' is declared but its value is never read.
+src/features/crm/components/StageAccordion.tsx(90,12): error TS6133: 'saving' is declared but its value is never read.
+src/features/crm/pages/CRMPage.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/features/crm/pages/CRMPage.tsx(6,34): error TS2307: Cannot find module '../components/OpportunityModal' or its corresponding type declarations.
+src/features/crm/pages/CRMPage.tsx(8,35): error TS2307: Cannot find module '../hooks/usePipelineStages' or its corresponding type declarations.
+src/features/crm/pages/CRMPage.tsx(16,52): error TS2339: Property 'updateOpportunityStage' does not exist on type '{ stages: { color: string; created_at: string; id: string; is_active: boolean | null; is_system: boolean | null; name: string; position: number; }[]; opportunities: OpportunityWithRelations[]; ... 4 more ...; updateOpportunity: UseMutationResult<...>; }'.
+src/features/crm/pages/CRMPage.tsx(59,25): error TS2322: Type '{ opportunities: OpportunityWithRelations[]; onRowClick: (id: string) => void; }' is not assignable to type 'IntrinsicAttributes & OpportunityListProps'.
+  Property 'opportunities' does not exist on type 'IntrinsicAttributes & OpportunityListProps'.
+src/features/crm/pages/CRMSettingsPage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/crm/pages/OpportunityDetail.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/features/database/components/companies/CompanyEmployeesSection.tsx(13,8): error TS1149: File name 'C:/Users/Admin/Documents/AI Projects/T.i.NS/src/components/ui/table.tsx' differs from already included file name 'C:/Users/Admin/Documents/AI Projects/T.i.NS/src/components/ui/Table.tsx' only in casing.
+  The file is in the program because:
+    Imported via '@/components/ui/Table' from file 'C:/Users/Admin/Documents/AI Projects/T.i.NS/src/features/admin/components/UserList.tsx'
+    Imported via '@/components/ui/Table' from file 'C:/Users/Admin/Documents/AI Projects/T.i.NS/src/features/admin/components/RoleList.tsx'
+    Imported via '@/components/ui/Table' from file 'C:/Users/Admin/Documents/AI Projects/T.i.NS/src/features/admin/components/AuditLogViewer.tsx'
+    Imported via '@/components/ui/Table' from file 'C:/Users/Admin/Documents/AI Projects/T.i.NS/src/components/ui/DataTable.tsx'
+    Imported via '@/components/ui/table' from file 'C:/Users/Admin/Documents/AI Projects/T.i.NS/src/features/database/components/companies/CompanyEmployeesSection.tsx'
+    Imported via '@/components/ui/Table' from file 'C:/Users/Admin/Documents/AI Projects/T.i.NS/src/features/database/components/manufacturers/BankingAccountsSection.tsx'
+    Imported via '@/components/ui/table' from file 'C:/Users/Admin/Documents/AI Projects/T.i.NS/src/features/database/components/manufacturers/ManufacturerProductsSection.tsx'
+    Matched by include pattern 'src' in 'C:/Users/Admin/Documents/AI Projects/T.i.NS/tsconfig.json'
+    Imported via './Table' from file 'C:/Users/Admin/Documents/AI Projects/T.i.NS/src/components/ui/index.ts'
+src/features/database/components/forms/ManufacturerForm.tsx(45,13): error TS2353: Object literal may only specify known properties, and 'address' does not exist in type 'AsyncDefaultValues<{ name: string; phone?: string | undefined; tax_id?: string | undefined; website?: string | undefined; }> | { name?: string | undefined; phone?: string | undefined; tax_id?: string | undefined; website?: string | undefined; }'.
+src/features/database/components/forms/ManufacturerForm.tsx(60,39): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(names: readonly ("phone" | "name" | "tax_id" | "website")[], defaultValue?: { name?: string | undefined; phone?: string | undefined; tax_id?: string | undefined; website?: string | undefined; } | undefined): readonly (string | undefined)[]', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'readonly ("phone" | "name" | "tax_id" | "website")[]'.
+  Overload 2 of 4, '(name: "phone" | "name" | "tax_id" | "website", defaultValue?: string | undefined): string | undefined', gave the following error.
+    Argument of type '"has_exclusivity"' is not assignable to parameter of type '"phone" | "name" | "tax_id" | "website"'.
+  Overload 3 of 4, '(callback: WatchObserver<{ name: string; phone?: string | undefined; tax_id?: string | undefined; website?: string | undefined; }>, defaultValues?: { name?: string | undefined; phone?: string | undefined; tax_id?: string | undefined; website?: string | undefined; } | undefined): Subscription', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'WatchObserver<{ name: string; phone?: string | undefined; tax_id?: string | undefined; website?: string | undefined; }>'.
+src/features/database/components/forms/ManufacturerForm.tsx(70,17): error TS2353: Object literal may only specify known properties, and 'address' does not exist in type '{ name: string; phone?: string | undefined; tax_id?: string | undefined; website?: string | undefined; } | { name?: string | undefined; phone?: string | undefined; tax_id?: string | undefined; website?: string | undefined; } | ResetAction<...>'.
+src/features/database/components/forms/ManufacturerForm.tsx(89,38): error TS2339: Property 'contract_file_id' does not exist on type '{ name: string; phone?: string | undefined; tax_id?: string | undefined; website?: string | undefined; }'.
+src/features/database/components/forms/ManufacturerForm.tsx(90,41): error TS2339: Property 'exclusivity_file_id' does not exist on type '{ name: string; phone?: string | undefined; tax_id?: string | undefined; website?: string | undefined; }'.
+src/features/database/components/forms/ManufacturerForm.tsx(91,39): error TS2339: Property 'contract_validity' does not exist on type '{ name: string; phone?: string | undefined; tax_id?: string | undefined; website?: string | undefined; }'.
+src/features/database/components/forms/ManufacturerForm.tsx(108,60): error TS2345: Argument of type '(values: ManufacturerFormValues) => void' is not assignable to parameter of type 'SubmitHandler<TFieldValues>'.
+  Types of parameters 'values' and 'data' are incompatible.
+    Type 'TFieldValues' is not assignable to type '{ name: string; phone?: string | undefined; tax_id?: string | undefined; website?: string | undefined; }'.
+      Property 'name' is missing in type 'FieldValues' but required in type '{ name: string; phone?: string | undefined; tax_id?: string | undefined; website?: string | undefined; }'.
+src/features/database/components/forms/ManufacturerForm.tsx(120,51): error TS2345: Argument of type '(values: ManufacturerFormValues) => void' is not assignable to parameter of type 'SubmitHandler<TFieldValues>'.
+  Types of parameters 'values' and 'data' are incompatible.
+    Type 'TFieldValues' is not assignable to type '{ name: string; phone?: string | undefined; tax_id?: string | undefined; website?: string | undefined; }'.
+      Property 'name' is missing in type 'FieldValues' but required in type '{ name: string; phone?: string | undefined; tax_id?: string | undefined; website?: string | undefined; }'.
+src/features/database/components/forms/ManufacturerForm.tsx(171,70): error TS2345: Argument of type '"address.street"' is not assignable to parameter of type '"phone" | "name" | "tax_id" | "website"'.
+src/features/database/components/forms/ManufacturerForm.tsx(176,72): error TS2345: Argument of type '"address.city"' is not assignable to parameter of type '"phone" | "name" | "tax_id" | "website"'.
+src/features/database/components/forms/ManufacturerForm.tsx(180,82): error TS2345: Argument of type '"address.state_province"' is not assignable to parameter of type '"phone" | "name" | "tax_id" | "website"'.
+src/features/database/components/forms/ManufacturerForm.tsx(186,79): error TS2345: Argument of type '"address.postal_code"' is not assignable to parameter of type '"phone" | "name" | "tax_id" | "website"'.
+src/features/database/components/forms/ManufacturerForm.tsx(190,75): error TS2345: Argument of type '"address.country"' is not assignable to parameter of type '"phone" | "name" | "tax_id" | "website"'.
+src/features/database/components/forms/ManufacturerForm.tsx(197,81): error TS2345: Argument of type '"contract_validity"' is not assignable to parameter of type '"phone" | "name" | "tax_id" | "website"'.
+src/features/database/components/forms/ManufacturerForm.tsx(202,68): error TS2345: Argument of type '"contract_file_id"' is not assignable to parameter of type '"phone" | "name" | "tax_id" | "website"'.
+src/features/database/components/forms/ManufacturerForm.tsx(209,43): error TS2345: Argument of type '"has_exclusivity"' is not assignable to parameter of type '"phone" | "name" | "tax_id" | "website"'.
+src/features/database/components/forms/ManufacturerForm.tsx(219,75): error TS2345: Argument of type '"exclusivity_file_id"' is not assignable to parameter of type '"phone" | "name" | "tax_id" | "website"'.
+src/features/database/components/forms/ManufacturerForm.tsx(225,57): error TS2345: Argument of type '"notes"' is not assignable to parameter of type '"phone" | "name" | "tax_id" | "website"'.
+src/features/database/components/manufacturers/ManufacturerProductsSection.tsx(13,8): error TS1149: File name 'C:/Users/Admin/Documents/AI Projects/T.i.NS/src/components/ui/table.tsx' differs from already included file name 'C:/Users/Admin/Documents/AI Projects/T.i.NS/src/components/ui/Table.tsx' only in casing.
+  The file is in the program because:
+    Imported via '@/components/ui/Table' from file 'C:/Users/Admin/Documents/AI Projects/T.i.NS/src/features/admin/components/UserList.tsx'
+    Imported via '@/components/ui/Table' from file 'C:/Users/Admin/Documents/AI Projects/T.i.NS/src/features/admin/components/RoleList.tsx'
+    Imported via '@/components/ui/Table' from file 'C:/Users/Admin/Documents/AI Projects/T.i.NS/src/features/admin/components/AuditLogViewer.tsx'
+    Imported via '@/components/ui/Table' from file 'C:/Users/Admin/Documents/AI Projects/T.i.NS/src/components/ui/DataTable.tsx'
+    Imported via '@/components/ui/table' from file 'C:/Users/Admin/Documents/AI Projects/T.i.NS/src/features/database/components/companies/CompanyEmployeesSection.tsx'
+    Imported via '@/components/ui/Table' from file 'C:/Users/Admin/Documents/AI Projects/T.i.NS/src/features/database/components/manufacturers/BankingAccountsSection.tsx'
+    Imported via '@/components/ui/table' from file 'C:/Users/Admin/Documents/AI Projects/T.i.NS/src/features/database/components/manufacturers/ManufacturerProductsSection.tsx'
+    Matched by include pattern 'src' in 'C:/Users/Admin/Documents/AI Projects/T.i.NS/tsconfig.json'
+    Imported via './Table' from file 'C:/Users/Admin/Documents/AI Projects/T.i.NS/src/components/ui/index.ts'
+src/features/database/hooks/useAuditLog.ts(92,18): error TS6133: 'payload' is declared but its value is never read.
+src/lib/supabase/types.ts(1115,14): error TS2536: Type '"Tables"' cannot be used to index type 'Database[PublicTableNameOrOptions["schema"]]'.
+src/lib/supabase/types.ts(1116,9): error TS2536: Type '"Views"' cannot be used to index type 'Database[PublicTableNameOrOptions["schema"]]'.
+src/lib/supabase/types.ts(1119,8): error TS2536: Type '"Tables"' cannot be used to index type 'Database[PublicTableNameOrOptions["schema"]]'.
+src/lib/supabase/types.ts(1120,9): error TS2536: Type '"Views"' cannot be used to index type 'Database[PublicTableNameOrOptions["schema"]]'.
+src/lib/supabase/types.ts(1140,13): error TS2536: Type '"Tables"' cannot be used to index type 'Database[PublicTableNameOrOptions["schema"]]'.
+src/lib/supabase/types.ts(1143,7): error TS2536: Type '"Tables"' cannot be used to index type 'Database[PublicTableNameOrOptions["schema"]]'.
+src/lib/supabase/types.ts(1161,13): error TS2536: Type '"Tables"' cannot be used to index type 'Database[PublicTableNameOrOptions["schema"]]'.
+src/lib/supabase/types.ts(1164,7): error TS2536: Type '"Tables"' cannot be used to index type 'Database[PublicTableNameOrOptions["schema"]]'.
+src/lib/supabase/types.ts(1182,13): error TS2536: Type '"Enums"' cannot be used to index type 'Database[PublicEnumNameOrOptions["schema"]]'.
+src/lib/supabase/types.ts(1185,7): error TS2536: Type '"Enums"' cannot be used to index type 'Database[PublicEnumNameOrOptions["schema"]]'.
+src/lib/supabase/types.ts(1197,13): error TS2536: Type '"CompositeTypes"' cannot be used to index type 'Database[PublicCompositeTypeNameOrOptions["schema"]]'.
+src/lib/supabase/types.ts(1200,7): error TS2536: Type '"CompositeTypes"' cannot be used to index type 'Database[PublicCompositeTypeNameOrOptions["schema"]]'.

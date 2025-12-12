@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useDroppable } from '@dnd-kit/core';
 import { cn } from '@/lib/utils/cn';
 import { KanbanCard } from './KanbanCard';
@@ -16,53 +16,71 @@ export function KanbanColumn({ stage, opportunities, onCardClick }: KanbanColumn
         data: { stage },
     });
 
+    // Calculate total value for the column
     const totalValue = opportunities.reduce((sum, opp) => sum + (opp.total_sales_value || 0), 0);
     const currency = opportunities[0]?.currency || 'USD';
-    const isNegative = stage.name.toLowerCase() === 'lost';
-    const isPositive = stage.name.toLowerCase() === 'won';
 
     return (
-        <div className="flex flex-col h-full min-w-[340px] max-w-[340px] snap-start">
-            {/* Clean Rounded Header */}
-            <div className={cn(
-                "mb-4 p-3 rounded-lg border-l-4 flex flex-col gap-1 transition-colors",
-                "bg-gray-50/50 border-gray-200",
-                isOver && "bg-gray-100 ring-2 ring-gray-900/5 ring-inset"
-            )}
-                style={{ borderLeftColor: stage.color }}
-            >
-                <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-gray-900 text-sm uppercase tracking-wide truncate max-w-[200px]" title={stage.name}>
+        <div className="flex flex-col h-full w-[300px] shrink-0">
+            {/* Column Header - Minimal Design */}
+            <div className="flex items-center justify-between mb-4 py-2">
+                <div className="flex items-center gap-2.5">
+                    {/* Color indicator dot */}
+                    <div
+                        className="w-2.5 h-2.5 rounded-full ring-2 ring-white shadow-sm"
+                        style={{ backgroundColor: stage.color || '#6B7280' }}
+                    />
+                    <h3 className="text-sm font-semibold text-gray-800 tracking-tight">
                         {stage.name}
                     </h3>
-                    <span className="text-xs font-bold text-gray-500 bg-white px-2 py-0.5 rounded shadow-sm border border-gray-100">
-                        {opportunities.length}
-                    </span>
                 </div>
 
-                {/* Total Value Summary */}
-                {totalValue > 0 && (
-                    <div className="text-xs font-medium text-gray-500 mt-1">
-                        Total: <span className="text-gray-900">{new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 0 }).format(totalValue)}</span>
-                    </div>
-                )}
+                {/* Count badge */}
+                <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                    {opportunities.length}
+                </span>
             </div>
 
-            {/* Scrollable Card Area */}
+            {/* Optional: Total value summary */}
+            {totalValue > 0 && (
+                <div className="text-xs text-gray-400 mb-3 -mt-2">
+                    {new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency,
+                        maximumFractionDigits: 0
+                    }).format(totalValue)}
+                </div>
+            )}
+
+            {/* Cards Container - Scrollable */}
             <div
                 ref={setNodeRef}
                 className={cn(
-                    "flex-1 overflow-y-auto px-1 -mx-1 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent flex flex-col gap-3",
-                    isOver && "bg-gray-50/50 rounded-lg"
+                    "flex-1 min-h-0 overflow-y-auto space-y-3 pr-1 -mr-1",
+                    "scrollbar-thin scrollbar-thumb-gray-200/60 scrollbar-track-transparent",
+                    "transition-colors duration-200 rounded-lg",
+                    // Drop zone feedback
+                    isOver && "bg-gray-50/80"
                 )}
             >
-                {opportunities.map(opp => (
-                    <KanbanCard
-                        key={opp.id}
-                        opportunity={opp}
-                        onClick={() => onCardClick?.(opp.id)}
-                    />
-                ))}
+                {opportunities.length === 0 ? (
+                    <div className={cn(
+                        "flex items-center justify-center h-24 rounded-xl border-2 border-dashed",
+                        isOver ? "border-gray-300 bg-gray-50" : "border-gray-100"
+                    )}>
+                        <span className="text-xs text-gray-400">
+                            {isOver ? "Drop here" : "No opportunities"}
+                        </span>
+                    </div>
+                ) : (
+                    opportunities.map(opp => (
+                        <KanbanCard
+                            key={opp.id}
+                            opportunity={opp}
+                            onClick={() => onCardClick?.(opp.id)}
+                        />
+                    ))
+                )}
             </div>
         </div>
     );

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
     DndContext,
     DragEndEvent,
@@ -6,7 +6,8 @@ import {
     DragStartEvent,
     PointerSensor,
     useSensor,
-    useSensors
+    useSensors,
+    closestCenter
 } from '@dnd-kit/core';
 import { createPortal } from 'react-dom';
 import { KanbanColumn } from './KanbanColumn';
@@ -21,29 +22,32 @@ interface KanbanBoardProps {
 }
 
 export function KanbanBoard({ stages, opportunities, onStageChange, onCardClick }: KanbanBoardProps) {
-    const [activeId, setActiveId] = React.useState<string | null>(null);
+    const [activeId, setActiveId] = useState<string | null>(null);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 8, // Prevent accidental drags
+                distance: 8,
             },
         })
     );
 
+    // Group opportunities by stage
     const opportunitiesByStage = useMemo(() => {
-        const acc: Record<string, OpportunityWithRelations[]> = {};
+        const grouped: Record<string, OpportunityWithRelations[]> = {};
         stages.forEach(stage => {
-            acc[stage.id] = [];
+            grouped[stage.id] = [];
         });
         opportunities.forEach(opp => {
-            if (acc[opp.stage_id || '']) {
-                acc[opp.stage_id || ''].push(opp);
+            const stageId = opp.stage_id || '';
+            if (grouped[stageId]) {
+                grouped[stageId].push(opp);
             }
         });
-        return acc;
+        return grouped;
     }, [stages, opportunities]);
 
+    // Find the active opportunity for drag overlay
     const activeOpportunity = useMemo(() => {
         return opportunities.find(opp => opp.id === activeId);
     }, [activeId, opportunities]);
@@ -57,7 +61,6 @@ export function KanbanBoard({ stages, opportunities, onStageChange, onCardClick 
 
         if (over && active.id !== over.id) {
             const newStageId = over.id as string;
-            // Basic validation
             if (stages.some(s => s.id === newStageId)) {
                 onStageChange(active.id as string, newStageId);
             }
@@ -65,14 +68,28 @@ export function KanbanBoard({ stages, opportunities, onStageChange, onCardClick 
         setActiveId(null);
     };
 
+    const handleDragCancel = () => {
+        setActiveId(null);
+    };
+
     return (
         <DndContext
             sensors={sensors}
+            collisionDetection={closestCenter}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
+            onDragCancel={handleDragCancel}
         >
-            {/* Horizontal Scroll Container */}
-            <div className="flex h-full gap-6 overflow-x-auto pb-4 px-1 snap-x">
+            {/* 
+                Horizontal scroll container
+                - h-full: takes full height from parent
+                - overflow-x-auto: horizontal scroll when columns exceed width
+                - overflow-y-hidden: prevent vertical scrollbar at this level
+                - gap-4: 16px between columns
+                - pb-4: bottom padding for scrollbar space
+                - No negative margins!
+            */}
+            <div className="flex h-full gap-4 overflow-x-auto overflow-y-hidden pb-4 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
                 {stages.map(stage => (
                     <KanbanColumn
                         key={stage.id}
@@ -83,12 +100,15 @@ export function KanbanBoard({ stages, opportunities, onStageChange, onCardClick 
                 ))}
             </div>
 
-            {/* Drag Overlay Portal */}
+            {/* Drag Overlay - rendered in portal for proper z-index */}
             {createPortal(
-                <DragOverlay>
+                <DragOverlay dropAnimation={{
+                    duration: 200,
+                    easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+                }}>
                     {activeOpportunity ? (
-                        <div className="w-[340px] opacity-90 rotate-2 cursor-grabbing">
-                            <KanbanCard opportunity={activeOpportunity} />
+                        <div className="w-[300px] rotate-2 opacity-95 cursor-grabbing">
+                            <KanbanCard opportunity={activeOpportunity} isDragOverlay />
                         </div>
                     ) : null}
                 </DragOverlay>,

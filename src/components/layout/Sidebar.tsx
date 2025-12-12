@@ -35,7 +35,7 @@ export function Sidebar() {
     return (
         <aside
             className={cn(
-                "relative flex flex-col py-2 transition-all duration-300 ease-in-out bg-[#1B1B1B] text-white",
+                "relative flex flex-col py-2 transition-all duration-300 ease-in-out bg-[#1B1B1B] text-white shrink-0",
                 isCollapsed ? "w-14 items-center px-2" : "w-48 px-3"
             )}
         >
