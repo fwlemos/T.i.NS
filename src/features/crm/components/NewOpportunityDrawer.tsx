@@ -2,7 +2,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from '@/components/ui/Sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/Sheet';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
@@ -156,15 +156,16 @@ export function NewOpportunityDrawer({
                         />
                     </div>
 
-                    <SheetFooter className="mt-8">
-                        <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} className="text-gray-400 hover:text-white">
-                            Cancel
-                        </Button>
-                        <Button type="submit" disabled={isLoading} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                    <div className="mt-8">
+                        <Button
+                            type="submit"
+                            disabled={isLoading}
+                            className="w-full bg-white text-black hover:bg-gray-200"
+                        >
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Create Opportunity
                         </Button>
-                    </SheetFooter>
+                    </div>
                 </form>
             </SheetContent>
         </Sheet>
