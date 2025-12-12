@@ -10,10 +10,10 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from '@/components/ui/table';
+} from '@/components/ui/Table';
 import { Button } from '@/components/ui/Button';
 import { DeleteAlertDialog } from '@/components/ui/DeleteAlertDialog';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/Sheet';
+import { AppDrawer } from '@/components/ui/AppDrawer';
 import { ContactForm } from '../forms/ContactForm';
 import { toast } from 'sonner';
 
@@ -172,23 +172,23 @@ export function CompanyEmployeesSection({ companyId }: CompanyEmployeesSectionPr
                 isDeleting={isDeleting}
             />
 
-            <Sheet open={!!editingEmployee} onOpenChange={(open) => !open && setEditingEmployee(null)}>
-                <SheetContent className="overflow-y-auto" container={document.getElementById('database-drawer-container')}>
-                    <SheetHeader>
-                        <SheetTitle>Edit Employee</SheetTitle>
-                        <SheetDescription>Make changes to the employee details.</SheetDescription>
-                    </SheetHeader>
-                    <div className="mt-6">
-                        {editingEmployee && (
-                            <ContactForm
-                                initialData={editingEmployee}
-                                onSubmit={handleUpdateSubmit}
-                                isLoading={false}
-                            />
-                        )}
-                    </div>
-                </SheetContent>
-            </Sheet>
+            <AppDrawer
+                open={!!editingEmployee}
+                onOpenChange={(open) => !open && setEditingEmployee(null)}
+                title="Edit Employee"
+                description="Make changes to the employee details."
+            >
+                <div className="mt-6">
+                    {editingEmployee && (
+                        <ContactForm
+                            initialData={editingEmployee}
+                            onSubmit={handleUpdateSubmit}
+                            isLoading={false}
+                            isNested={true}
+                        />
+                    )}
+                </div>
+            </AppDrawer>
         </div>
     );
 }

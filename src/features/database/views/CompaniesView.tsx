@@ -10,13 +10,7 @@ import { supabase } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { BulkEditDialog } from '../components/bulk/BulkEditDialog';
 
-import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetDescription,
-} from '@/components/ui/Sheet';
+import { AppDrawer } from '@/components/ui/AppDrawer';
 import { CompanyForm } from '../components/forms/CompanyForm';
 
 type Company = Database['public']['Tables']['companies']['Row'] & {
@@ -171,22 +165,16 @@ export function CompaniesView() {
             description="Manage your client companies."
             onCreate={() => setIsCreateOpen(true)}
         >
-            <Sheet open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-                <SheetContent
-                    className="overflow-y-auto"
-                    container={document.getElementById('database-drawer-container')}
-                >
-                    <SheetHeader>
-                        <SheetTitle>Create New Company</SheetTitle>
-                        <SheetDescription>
-                            Add a new client company. Click save when you're done.
-                        </SheetDescription>
-                    </SheetHeader>
-                    <div className="mt-6">
-                        <CompanyForm onSubmit={handleCreateSubmit} isLoading={false} />
-                    </div>
-                </SheetContent>
-            </Sheet>
+            <AppDrawer
+                open={isCreateOpen}
+                onOpenChange={setIsCreateOpen}
+                title="Create New Company"
+                description="Add a new client company. Click save when you're done."
+            >
+                <div className="mt-6">
+                    <CompanyForm onSubmit={handleCreateSubmit} isLoading={false} isNested={true} />
+                </div>
+            </AppDrawer>
             <div className="mb-4 relative max-w-sm">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input

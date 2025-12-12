@@ -2,7 +2,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/Sheet';
+import { AppDrawer } from '@/components/ui/AppDrawer';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
@@ -56,118 +56,110 @@ export function NewOpportunityDrawer({
     };
 
     return (
-        <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent
-                side="right"
-                className="w-[600px] overflow-y-auto bg-[#1B1B1B] text-white border-l border-white/10"
-                container={document.getElementById('database-drawer-container')}
-            >
-                <SheetHeader className="mb-6">
-                    <SheetTitle className="text-2xl font-bold text-white">New Opportunity</SheetTitle>
-                    <SheetDescription className="text-gray-400">
-                        Create a new sales opportunity. Fill in the details below.
-                    </SheetDescription>
-                </SheetHeader>
+        <AppDrawer
+            open={open}
+            onOpenChange={onOpenChange}
+            title="New Opportunity"
+            description="Create a new sales opportunity. Fill in the details below."
+        >
+            <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+                <div className="space-y-2">
+                    <Label htmlFor="title" className="text-white">Opportunity Title <span className="text-red-400">*</span></Label>
+                    <Input
+                        id="title"
+                        {...register('title')}
+                        placeholder="e.g. Q4 Lab Equipment Upgrade"
+                        className="bg-[#2A2A2A] border-white/10 text-white placeholder:text-gray-500"
+                    />
+                    {errors.title && <span className="text-xs text-red-400">{errors.title.message}</span>}
+                </div>
 
-                <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="title" className="text-white">Opportunity Title <span className="text-red-400">*</span></Label>
-                        <Input
-                            id="title"
-                            {...register('title')}
-                            placeholder="e.g. Q4 Lab Equipment Upgrade"
-                            className="bg-[#2A2A2A] border-white/10 text-white placeholder:text-gray-500"
-                        />
-                        {errors.title && <span className="text-xs text-red-400">{errors.title.message}</span>}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label className="text-white">Lead Origin <span className="text-red-400">*</span></Label>
-                            <Select onValueChange={(val) => setValue('lead_origin_id', val)}>
-                                <SelectTrigger className="bg-[#2A2A2A] border-white/10 text-white">
-                                    <SelectValue placeholder="Select origin" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-[#1B1B1B] border-white/10 text-white">
-                                    {leadOrigins.map(origin => (
-                                        <SelectItem key={origin.id} value={origin.id}>{origin.name}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {errors.lead_origin_id && <span className="text-xs text-red-400">{errors.lead_origin_id.message}</span>}
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label className="text-white">Office <span className="text-red-400">*</span></Label>
-                            <Select onValueChange={(val: 'TIA' | 'TIC') => setValue('office', val)} defaultValue="TIA">
-                                <SelectTrigger className="bg-[#2A2A2A] border-white/10 text-white">
-                                    <SelectValue placeholder="Select office" />
-                                </SelectTrigger>
-                                <SelectContent className="bg-[#1B1B1B] border-white/10 text-white">
-                                    <SelectItem value="TIA">TIA</SelectItem>
-                                    <SelectItem value="TIC">TIC</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label className="text-white">Contact <span className="text-red-400">*</span></Label>
-                        <Select onValueChange={(val) => setValue('contact_id', val)}>
+                        <Label className="text-white">Lead Origin <span className="text-red-400">*</span></Label>
+                        <Select onValueChange={(val) => setValue('lead_origin_id', val)}>
                             <SelectTrigger className="bg-[#2A2A2A] border-white/10 text-white">
-                                <SelectValue placeholder="Select contact" />
+                                <SelectValue placeholder="Select origin" />
                             </SelectTrigger>
                             <SelectContent className="bg-[#1B1B1B] border-white/10 text-white">
-                                {contacts.map(contact => (
-                                    <SelectItem key={contact.id} value={contact.id}>{contact.name}</SelectItem>
+                                {leadOrigins.map(origin => (
+                                    <SelectItem key={origin.id} value={origin.id}>{origin.name}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
-                        {errors.contact_id && <span className="text-xs text-red-400">{errors.contact_id.message}</span>}
+                        {errors.lead_origin_id && <span className="text-xs text-red-400">{errors.lead_origin_id.message}</span>}
                     </div>
 
                     <div className="space-y-2">
-                        <Label className="text-white">Interested Products <span className="text-red-400">*</span></Label>
-                        <div className="p-3 rounded-md bg-[#2A2A2A] border border-white/10 max-h-[150px] overflow-y-auto space-y-2">
-                            {products.length === 0 ? (
-                                <p className="text-xs text-gray-500">No products available.</p>
-                            ) : products.map(product => (
-                                <label key={product.id} className="flex items-center gap-2 cursor-pointer hover:bg-white/5 p-1 rounded">
-                                    <input
-                                        type="checkbox"
-                                        value={product.id}
-                                        {...register('product_ids')}
-                                        className="rounded border-white/20 bg-[#1B1B1B] text-emerald-500 focus:ring-emerald-500/50"
-                                    />
-                                    <span className="text-sm text-gray-300">{product.name}</span>
-                                </label>
+                        <Label className="text-white">Office <span className="text-red-400">*</span></Label>
+                        <Select onValueChange={(val: 'TIA' | 'TIC') => setValue('office', val)} defaultValue="TIA">
+                            <SelectTrigger className="bg-[#2A2A2A] border-white/10 text-white">
+                                <SelectValue placeholder="Select office" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-[#1B1B1B] border-white/10 text-white">
+                                <SelectItem value="TIA">TIA</SelectItem>
+                                <SelectItem value="TIC">TIC</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    <Label className="text-white">Contact <span className="text-red-400">*</span></Label>
+                    <Select onValueChange={(val) => setValue('contact_id', val)}>
+                        <SelectTrigger className="bg-[#2A2A2A] border-white/10 text-white">
+                            <SelectValue placeholder="Select contact" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[#1B1B1B] border-white/10 text-white">
+                            {contacts.map(contact => (
+                                <SelectItem key={contact.id} value={contact.id}>{contact.name}</SelectItem>
                             ))}
-                        </div>
-                        {errors.product_ids && <span className="text-xs text-red-400">{errors.product_ids.message}</span>}
-                    </div>
+                        </SelectContent>
+                    </Select>
+                    {errors.contact_id && <span className="text-xs text-red-400">{errors.contact_id.message}</span>}
+                </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="notes" className="text-white">Notes</Label>
-                        <Textarea
-                            id="notes"
-                            {...register('notes')}
-                            placeholder="Initial call notes..."
-                            className="bg-[#2A2A2A] border-white/10 text-white placeholder:text-gray-500 min-h-[100px]"
-                        />
+                <div className="space-y-2">
+                    <Label className="text-white">Interested Products <span className="text-red-400">*</span></Label>
+                    <div className="p-3 rounded-md bg-[#2A2A2A] border border-white/10 max-h-[150px] overflow-y-auto space-y-2">
+                        {products.length === 0 ? (
+                            <p className="text-xs text-gray-500">No products available.</p>
+                        ) : products.map(product => (
+                            <label key={product.id} className="flex items-center gap-2 cursor-pointer hover:bg-white/5 p-1 rounded">
+                                <input
+                                    type="checkbox"
+                                    value={product.id}
+                                    {...register('product_ids')}
+                                    className="rounded border-white/20 bg-[#1B1B1B] text-emerald-500 focus:ring-emerald-500/50"
+                                />
+                                <span className="text-sm text-gray-300">{product.name}</span>
+                            </label>
+                        ))}
                     </div>
+                    {errors.product_ids && <span className="text-xs text-red-400">{errors.product_ids.message}</span>}
+                </div>
 
-                    <div className="mt-8">
-                        <Button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full bg-white text-black hover:bg-gray-200"
-                        >
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Create Opportunity
-                        </Button>
-                    </div>
-                </form>
-            </SheetContent>
-        </Sheet>
+                <div className="space-y-2">
+                    <Label htmlFor="notes" className="text-white">Notes</Label>
+                    <Textarea
+                        id="notes"
+                        {...register('notes')}
+                        placeholder="Initial call notes..."
+                        className="bg-[#2A2A2A] border-white/10 text-white placeholder:text-gray-500 min-h-[100px]"
+                    />
+                </div>
+
+                <div className="mt-8">
+                    <Button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full bg-white text-black hover:bg-gray-200"
+                    >
+                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Save Opportunity
+                    </Button>
+                </div>
+            </form>
+        </AppDrawer>
     );
 }

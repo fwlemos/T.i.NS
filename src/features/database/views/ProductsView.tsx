@@ -9,13 +9,7 @@ import { Database } from '@/lib/supabase/types';
 
 import { supabase } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetDescription,
-} from '@/components/ui/Sheet';
+import { AppDrawer } from '@/components/ui/AppDrawer';
 import { ProductForm } from '../components/forms/ProductForm';
 
 type Product = Database['public']['Tables']['products']['Row'] & {
@@ -138,22 +132,16 @@ export function ProductsView() {
             description="Catalog of products from manufacturers."
             onCreate={() => setIsCreateOpen(true)}
         >
-            <Sheet open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-                <SheetContent
-                    className="overflow-y-auto"
-                    container={document.getElementById('database-drawer-container')}
-                >
-                    <SheetHeader>
-                        <SheetTitle>Create New Product</SheetTitle>
-                        <SheetDescription>
-                            Add a new product to the catalog. Click save when you're done.
-                        </SheetDescription>
-                    </SheetHeader>
-                    <div className="mt-6">
-                        <ProductForm onSubmit={handleCreateSubmit} isLoading={false} />
-                    </div>
-                </SheetContent>
-            </Sheet>
+            <AppDrawer
+                open={isCreateOpen}
+                onOpenChange={setIsCreateOpen}
+                title="Create New Product"
+                description="Add a new product to the catalog. Click save when you're done."
+            >
+                <div className="mt-6">
+                    <ProductForm onSubmit={handleCreateSubmit} isLoading={false} isNested={true} />
+                </div>
+            </AppDrawer>
             <div className="mb-4 relative max-w-sm">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
