@@ -1,3 +1,7 @@
+---
+description: Add, Commit and Push to Github
+---
+
 # Git Push Guideline
 
 When the user requests to "push changes", "save to git", or tags this file, follow these steps to ensure clean and descriptive version control.

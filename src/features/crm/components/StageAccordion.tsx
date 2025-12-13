@@ -13,9 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 interface StageAccordionProps {
     opportunity: OpportunityWithRelations;
     stages: PipelineStage[];
+    readOnly?: boolean;
 }
 
-export function StageAccordion({ opportunity, stages, expandedStages, onToggle }: StageAccordionProps & { expandedStages: string[]; onToggle: (id: string) => void }) {
+export function StageAccordion({ opportunity, stages, expandedStages, onToggle, readOnly }: StageAccordionProps & { expandedStages: string[]; onToggle: (id: string) => void }) {
     const currentStageIdx = stages.findIndex(s => s.id === opportunity.stage_id);
 
     return (
@@ -67,7 +68,7 @@ export function StageAccordion({ opportunity, stages, expandedStages, onToggle }
                         {isExpanded && (
                             <div className="px-5 pb-6 pt-0 animate-in fade-in slide-in-from-top-1 duration-200">
                                 <div className="h-px bg-gray-100 w-full mb-6" />
-                                <StageContent stage={stage} opportunity={opportunity} />
+                                <StageContent stage={stage} opportunity={opportunity} readOnly={readOnly} />
                             </div>
                         )}
                     </div>
@@ -77,12 +78,13 @@ export function StageAccordion({ opportunity, stages, expandedStages, onToggle }
     );
 }
 
-function StageContent({ stage, opportunity }: { stage: PipelineStage, opportunity: OpportunityWithRelations }) {
+function StageContent({ stage, opportunity, readOnly }: { stage: PipelineStage, opportunity: OpportunityWithRelations, readOnly?: boolean }) {
     const { updateOpportunity } = useOpportunities();
     const { incoterms, saleTypes, paymentTerms } = useCRMOptions();
     const [saving, setSaving] = useState(false);
 
     const handleSave = async (field: string, value: any) => {
+        if (readOnly) return;
         setSaving(true);
         try {
             await updateOpportunity.mutateAsync({
@@ -108,9 +110,10 @@ function StageContent({ stage, opportunity }: { stage: PipelineStage, opportunit
                         defaultValue={value}
                         onBlur={(e) => handleSave(field as string, e.target.value)}
                         className="bg-white border-gray-200 text-gray-900 text-sm min-h-[100px] focus:border-gray-900 focus:ring-gray-900/5 resize-none shadow-sm"
+                        disabled={readOnly}
                     />
                 ) : type === 'select' ? (
-                    <Select onValueChange={(val) => handleSave(field as string, val)} defaultValue={value}>
+                    <Select onValueChange={(val) => handleSave(field as string, val)} defaultValue={value} disabled={readOnly}>
                         <SelectTrigger className="bg-white border-gray-200 text-gray-900 h-10 shadow-sm hover:bg-gray-50 focus:ring-gray-900/5">
                             <SelectValue placeholder="Select..." />
                         </SelectTrigger>
@@ -126,6 +129,7 @@ function StageContent({ stage, opportunity }: { stage: PipelineStage, opportunit
                         defaultValue={value}
                         onBlur={(e) => handleSave(field as string, e.target.value)}
                         className="bg-white border-gray-200 text-gray-900 h-10 shadow-sm focus:border-gray-900 focus:ring-gray-900/5"
+                        disabled={readOnly}
                     />
                 )}
             </div>

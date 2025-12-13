@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, XCircle, MoreVertical, Loader2, Calendar, ChevronsDown, ChevronsUp, Timer, Copy, Trash } from 'lucide-react';
+import { differenceInCalendarDays } from 'date-fns';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar';
@@ -8,6 +9,8 @@ import { ActivityTimeline } from '../components/ActivityTimeline';
 import { RelatedEntitiesPanel } from '../components/RelatedEntitiesPanel';
 import { StageAccordion } from '../components/StageAccordion';
 import { MarkLostDialog } from '../components/MarkLostDialog';
+import { OpportunitySummary } from '../components/OpportunitySummary';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useOpportunities } from '../hooks/useOpportunities';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/Command';
@@ -53,11 +56,12 @@ export function OpportunityDetail() {
     if (isLoading) return <div className="h-full flex items-center justify-center"><Loader2 className="animate-spin text-emerald-500 w-8 h-8" /></div>;
     if (error || !opportunity) return <div className="h-full flex items-center justify-center text-red-500 font-medium">Opportunity not found</div>;
 
-    const daysOpen = Math.floor((Date.now() - new Date(opportunity.created_at).getTime()) / (1000 * 60 * 60 * 24));
+    const daysOpen = Math.abs(differenceInCalendarDays(new Date(), new Date(opportunity.created_at)));
     const daysInStage = opportunity.stage_changed_at
-        ? Math.floor((Date.now() - new Date(opportunity.stage_changed_at).getTime()) / (1000 * 60 * 60 * 24))
+        ? Math.abs(differenceInCalendarDays(new Date(), new Date(opportunity.stage_changed_at)))
         : 0;
     const stageColor = opportunity.stage?.color || '#9ca3af';
+    const isLost = opportunity.stage?.name === 'Lost';
 
     const handleAdvanceStage = async () => {
         const currentStageIdx = stages.findIndex(s => s.id === opportunity.stage_id);
@@ -119,23 +123,30 @@ export function OpportunityDetail() {
 
                             <div className="flex items-center gap-1.5 text-xs text-gray-500">
                                 <Calendar size={12} className="text-gray-400" />
-                                <span>Opened {daysOpen} days ago</span>
+                                <span>
+                                    {daysOpen === 0 ? 'Opened today' : daysOpen === 1 ? 'Opened yesterday' : `Opened ${daysOpen} days ago`}
+                                </span>
                             </div>
 
                             <div className="h-3 w-px bg-gray-200" />
 
                             <div className="flex items-center gap-1.5 text-xs text-gray-500">
                                 <Timer size={12} className="text-gray-400" />
-                                <span>{daysInStage} days in current phase</span>
+                                <span>
+                                    {daysInStage === 0 ? 'Started today in current phase' : `${daysInStage} days in current phase`}
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <Popover open={isOwnerOpen} onOpenChange={setIsOwnerOpen}>
+                    <Popover open={isOwnerOpen} onOpenChange={(open) => !isLost && setIsOwnerOpen(open)}>
                         <PopoverTrigger asChild>
-                            <div className="flex items-center gap-2 pr-4 border-r border-gray-100 mr-1 cursor-pointer hover:bg-gray-50 p-1 rounded-md transition-colors">
+                            <div className={cn(
+                                "flex items-center gap-2 pr-4 border-r border-gray-100 mr-1 p-1 rounded-md transition-colors",
+                                isLost ? "cursor-default opacity-70" : "cursor-pointer hover:bg-gray-50"
+                            )}>
                                 <Avatar className="h-8 w-8 ring-2 ring-white">
                                     <AvatarImage src={opportunity.owner_profile?.avatar_url || undefined} />
                                     <AvatarFallback className="bg-gray-100 text-gray-600 font-medium">
@@ -181,11 +192,20 @@ export function OpportunityDetail() {
                         </PopoverContent>
                     </Popover>
 
-                    <Button variant="ghost" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => setIsLostDialogOpen(true)}>
+                    <Button
+                        variant="ghost"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => setIsLostDialogOpen(true)}
+                        disabled={isLost}
+                    >
                         <XCircle size={18} className="mr-2" />
                         Lost
                     </Button>
-                    <Button onClick={handleAdvanceStage} className="bg-gray-900 hover:bg-gray-800 text-white shadow-sm">
+                    <Button
+                        onClick={handleAdvanceStage}
+                        className="bg-gray-900 hover:bg-gray-800 text-white shadow-sm"
+                        disabled={isLost}
+                    >
                         <CheckCircle2 size={18} className="mr-2" />
                         Advance
                     </Button>
@@ -218,45 +238,67 @@ export function OpportunityDetail() {
                         Activity & History
                     </div>
                     <div className="flex-1 overflow-y-auto p-4">
-                        <ActivityTimeline />
+                        <ActivityTimeline
+                            entityId={opportunity.id}
+                            entityType="opportunity"
+                            createdAt={opportunity.created_at}
+                            createdBy={opportunity.owner_id} // Fallback if no specific creator field
+                            creatorName={opportunity.owner_profile?.full_name}
+                        />
                     </div>
                 </div>
 
                 {/* Center: Main Form - Scrollable */}
                 <div className="flex-1 overflow-y-auto bg-white">
-                    <div className="max-w-3xl mx-auto p-8 space-y-8 min-h-full">
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-lg font-semibold text-gray-900">Stage Details</h2>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                    const allIds = stages.map(s => s.id);
-                                    const areAllExpanded = allIds.every(id => expandedStages.includes(id));
-                                    setExpandedStages(areAllExpanded ? [] : allIds);
-                                }}
-                                className="h-6 w-6 text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-                                title={stages.every(s => expandedStages.includes(s.id)) ? "Collapse All" : "Expand All"}
-                            >
-                                {stages.every(s => expandedStages.includes(s.id)) ? (
-                                    <ChevronsUp size={16} />
-                                ) : (
-                                    <ChevronsDown size={16} />
-                                )}
-                            </Button>
+                    <Tabs defaultValue={opportunity.stage?.name === 'Won' || opportunity.stage?.name === 'Lost' ? 'summary' : 'stages'} className="h-full flex flex-col">
+                        <div className="px-8 pt-4">
+                            <TabsList className="grid w-[400px] grid-cols-2">
+                                <TabsTrigger value="stages">Stage Details</TabsTrigger>
+                                <TabsTrigger value="summary">Summary</TabsTrigger>
+                            </TabsList>
                         </div>
 
-                        <StageAccordion
-                            opportunity={opportunity}
-                            stages={stages}
-                            expandedStages={expandedStages}
-                            onToggle={(id) => {
-                                setExpandedStages(prev =>
-                                    prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
-                                );
-                            }}
-                        />
-                    </div>
+                        <div className="flex-1 overflow-y-auto p-8 pt-6 min-h-0">
+                            <TabsContent value="stages" className="mt-0 space-y-8 h-full m-0 border-0 p-0 data-[state=inactive]:hidden text-slate-800">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h2 className="text-lg font-semibold text-gray-900">Stage Details</h2>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => {
+                                            const allIds = stages.map(s => s.id);
+                                            const areAllExpanded = allIds.every(id => expandedStages.includes(id));
+                                            setExpandedStages(areAllExpanded ? [] : allIds);
+                                        }}
+                                        className="h-6 w-6 text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+                                        title={stages.every(s => expandedStages.includes(s.id)) ? "Collapse All" : "Expand All"}
+                                    >
+                                        {stages.every(s => expandedStages.includes(s.id)) ? (
+                                            <ChevronsUp size={16} />
+                                        ) : (
+                                            <ChevronsDown size={16} />
+                                        )}
+                                    </Button>
+                                </div>
+
+                                <StageAccordion
+                                    opportunity={opportunity}
+                                    stages={stages}
+                                    expandedStages={expandedStages}
+                                    onToggle={(id) => {
+                                        setExpandedStages(prev =>
+                                            prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
+                                        );
+                                    }}
+                                    readOnly={opportunity.stage?.name === 'Lost'}
+                                />
+                            </TabsContent>
+
+                            <TabsContent value="summary" className="mt-0 m-0 border-0 p-0 text-slate-800 h-full data-[state=inactive]:hidden">
+                                <OpportunitySummary opportunity={opportunity} />
+                            </TabsContent>
+                        </div>
+                    </Tabs>
                 </div>
 
                 {/* Right: Related - Sticky/Scrollable independent */}

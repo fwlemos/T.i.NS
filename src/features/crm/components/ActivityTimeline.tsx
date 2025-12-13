@@ -1,19 +1,23 @@
-import React from 'react';
+import { ActivityTimeline as SharedActivityTimeline } from '@/features/database/components/widgets/ActivityTimeline';
 
-export function ActivityTimeline() {
+interface ActivityTimelineProps {
+    entityId?: string;
+    entityType?: string; // e.g. 'opportunity'
+    createdAt?: string;
+    createdBy?: string | null;
+    creatorName?: string | null;
+}
+
+export function ActivityTimeline({ entityId, entityType = 'opportunity', createdAt, createdBy, creatorName }: ActivityTimelineProps) {
+    if (!entityId) return <div className="text-sm text-gray-400 p-4">No entity ID provided for timeline.</div>;
+
     return (
-        <div className="bg-[#1B1B1B] border border-white/10 rounded-lg p-4 h-full">
-            <h3 className="text-sm font-semibold text-white mb-4">Timeline</h3>
-            <div className="space-y-4">
-                <div className="text-sm text-gray-400">
-                    <p>Today, 10:15</p>
-                    <p className="text-white">Quote v2 sent by Maria</p>
-                </div>
-                <div className="text-sm text-gray-400">
-                    <p>Dec 8, 14:30</p>
-                    <p className="text-white">Stage changed Qual → Quote</p>
-                </div>
-            </div>
-        </div>
+        <SharedActivityTimeline
+            entityId={entityId}
+            entityType={entityType}
+            createdAt={createdAt}
+            createdBy={createdBy}
+            creatorName={creatorName}
+        />
     );
 }
